@@ -10,8 +10,7 @@ RestartSec=10
 EnvironmentFile=%h/.home/.env
 ExecStart=ssh -N -q -A -D 1080 \
     -R 0:localhost:55523 \
-    -p ${RK3328_SSH_PORT} \
-    ${RK3328_SSH_USER}@${RK3328_DOMAIN}
+    ${SOCKS5_TUNNEL_HOST}
 
 [Install]
 WantedBy=default.target
