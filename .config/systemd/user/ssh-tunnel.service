@@ -1,0 +1,17 @@
+[Unit]
+Description=SOCKS5 tunnel over SSH
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=10
+EnvironmentFile=%h/.home/.env
+ExecStart=ssh -N -q -A -D 1080 \
+    -R 0:localhost:55523 \
+    -p ${RK3328_SSH_PORT} \
+    ${RK3328_SSH_USER}@${RK3328_DOMAIN}
+
+[Install]
+WantedBy=default.target
