@@ -41,6 +41,10 @@ fi
 
 
 [ -f ~/.bash_aliases ] && . ~/.bash_aliases
+source ~/Projects/tomjtoth.github.io/linux/bash_aliases
+# source <(curl -sSL https://tomjtoth.github.io/linux/bash_aliases)
+# source <(curl -sSL https://tomjtoth.github.io/linux/reminders.sh)
+
 
 # enable programmable completion features (you don't need to enable
 # this, if it's already enabled in /etc/bash.bashrc and /etc/profile

@@ -1,38 +1,8 @@
-
 # shellcheck disable=SC2139
 alias {é,ö}top="htop -F 'mega|onedrive|python'"
-alias {é,ö}s="sudo -E -s"
-alias {é,ö}m=mindenes.py
-alias {é,ö}p='ping 1.1.1.1'
-
-alias zzz='z() {
-	[ -n "$1" ] && \
-		echo "going to suspend in $1" && \
-		sleep $1
-	#playerctl pause
-	#swaylock -f -c 000000
-	systemctl -i suspend
-	unset -f z
-}
-z'
-
-alias {é,ö}lz4='f(){
-	tar cf - "$1" | lz4 -z --best > "${1%%/}.tar.lz4"
-	unset -f f
-}
-f'
-
-alias {é,ö}xz='f(){
-	tar cf - "$1" | xz -z -9 > "${1%%/}.tar.xz"
-	unset -f f
-}
-f'
-
-alias {é,ö}tar='f(){
-	tar cf "${1%/}.tar""$1"
-	unset -f f
-}
-f'
+alias éboinc='boinctui -b localhost -p "$(cat ~/gui_rpc_auth.cfg)"'
+alias énmcli="nohup bash -c 'while true; do nmcli c up ttj; sleep 1h; done' &"
+alias {é,ö}gpu='echo -e "\n\tTODO: implement single GPU passthrough for qemu\n"'
 
 # WiP
 alias {é,ö}yt='f(){
@@ -71,76 +41,8 @@ alias {é,ö}bt='f(){
 }
 f'
 
-# systemctl
-alias {é,ö}ss="sudo systemctl"
-alias {é,ö}ssdr="sudo systemctl daemon-reload"
-alias {é,ö}su="systemctl --user"
-alias {é,ö}sudr="systemctl --user daemon-reload"
-
-
 # Helsinging Yliopistolla
 alias {é,ö}hy-home="smbclient //home8.ad.helsinki.fi/t/tjtoth -U 'ATKK/tjtoth'"
-
-
-# if we are on Arch Linux
-if [ -f /usr/bin/pacman ]; then
-	if [ -f /usr/bin/pacaur ]; then
-		AUR="pacaur"
-	elif [ -f /usr/bin/paru ]; then
-		AUR="paru"
-	else
-		AUR="pacman"
-	fi
-	INSTALL='f() {
-		[ $(( ($(date +%s) - \
-			$(stat -c %Y /var/lib/pacman/sync/*.db \
-			| sort | tail -n 1))/60/60 )) -ge 24 ] && \
-			sudo pacman -Syy
-		unset -f f
-	}
-	f && '$AUR' -S'
-	REMOVE="sudo pacman -Rscn"
-	SEARCH="pacman -Ss"
-	INFO="$AUR -Si"
-	LIST="pacman -Ql"
-	UPDATE="$AUR -Syyu --noconfirm && sudo paccache -k 0 -r"
-	
-	alias {é,ö}u="sudo pacman -U --asdeps"
-	alias éáű="$AUR -Ss"
-	alias {é,ö}fix="sudo pacman-key --refresh-keys"
-	
-# if we are on a debian derivative
-elif [ -f /usr/bin/apt ]; then
-	INSTALL="sudo apt update && sudo apt install"
-	REMOVE="sudo apt-get purge"
-	SEARCH="apt search"
-	INFO="apt show"
-	LIST="dpkg-query -L"
-	UPDATE="sudo apt autoremove && sudo apt update && sudo apt full-upgrade"
-	
-	alias {é,ö}u='sudo apt install'
-	
-# if we are on Android/Termux
-elif [ -f /data/data/com.termux/files/usr/bin/pkg ]; then
-	INSTALL="pkg install"
-	REMOVE="pkg uninstall"
-	SEARCH="pkg search"
-	LIST="pkg files"
-	UPDATE="pkg upgrade"
-fi
-
-alias {éá,öä}="$SEARCH"
-alias {é,ö}i="$INFO"
-alias {é,ö}l="$LIST"
-alias {éé,öö}="$INSTALL"
-alias {é,ö}r="$REMOVE"
-
-alias {ééé,ööö}="$UPDATE"
-
-alias {ééé,ööö}r="$UPDATE && systemctl -i reboot"
-alias {ééé,ööö}p="$UPDATE && systemctl -i poweroff"
-alias {ééé,ööö}z="$UPDATE && systemctl -i suspend"
-
 
 
 : <<'SCRAP'
@@ -241,4 +143,3 @@ alias {é,ö}d='d() {
 d'
 
 SCRAP
-
