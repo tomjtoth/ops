@@ -1,0 +1,12 @@
+[Unit]
+Description=battery monitor
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=10
+EnvironmentFile=%h/.home/.env
+ExecStart=%h/bin/battery-monitor.sh
+
+[Install]
+WantedBy=default.target
