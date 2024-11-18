@@ -15,7 +15,7 @@ while true; do
 	CURR=($(cat "${PATH_TO_BAT}"/{capacity,status}))
 
 	[[ ${CURR[0]} -le $CRIT_BAT_LEVEL && "${CURR[1]}" != "Charging" ]] \
-		&& echo $CRIT_BAT_COMMAND
+		&& $CRIT_BAT_COMMAND
 
 	sleep 1m
 done
