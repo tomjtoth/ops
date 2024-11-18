@@ -1,9 +1,13 @@
 #!/bin/bash
 
+# as of 28.21.2024 shared folder support and GPU passthrough not working, win11-24H2 installed just fine
+# setting up samba requires limiting it to localhost
+
 VM_DIR=~/qemu/${VM_OS:-win11}
-VM_DISK=${VM_DIR}/disk
+VM_DISK="${VM_DIR}/disk"
 VM_INPUT="-usb -device usb-tablet"
 VM_VIDEO="-vga qxl"
+VM_VIDEO="-vga vmware"
 VM_AUDIO="-audiodev pipewire,id=snd0 -device ich9-intel-hda"
 
 UEFI_FLAGS="
@@ -34,10 +38,11 @@ swtpm socket --tpm2 --tpmstate dir=${TPM_DIR} \
 TPM_PID=$!
 
 qemu-system-x86_64 \
-    -m 6G -cpu host -smp 8 \
+    -m 6G -cpu host -smp $(nproc) \
     -machine q35 \
     -drive file=${VM_DISK} \
     -enable-kvm \
+    -rtc base=localtime \
     $TPM_FLAGS \
     $UEFI_FLAGS \
     $VM_INPUT \
@@ -45,5 +50,5 @@ qemu-system-x86_64 \
     $VM_VIDEO \
     $INSTALL_FLAGS
 
-kill -p $TPM_PID
-
+# swtpm seems to be killed after qemu exits...
+# kill $TPM_PID
