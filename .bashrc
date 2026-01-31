@@ -28,10 +28,14 @@ fi
 
 
 [ -f ~/.bash_aliases ] && . ~/.bash_aliases
-source ~/Projects/tomjtoth.github.io/linux/bash_aliases
-# source <(curl -sSL https://tomjtoth.github.io/linux/bash_aliases)
-# source <(curl -sSL https://tomjtoth.github.io/linux/reminders.sh)
+[ -e ~/bin ] && export PATH="$PATH:~/bin"
+source ~/Projects/IT/tomjtoth.github.io/public/linux/bash_aliases
+# source <(curl -sSL https://tomjtoth.github.io/linux/bash_aliases) 2>/dev/null
 
+# and weekly reminders
+# source <(curl -sSL https://tomjtoth.github.io/linux/reminders.sh) 2>/dev/null
+
+[ -d ~/.cargo/bin ] && export PATH="$PATH:~/.cargo/bin"
 
 # enable programmable completion features (you don't need to enable
 # this, if it's already enabled in /etc/bash.bashrc and /etc/profile
