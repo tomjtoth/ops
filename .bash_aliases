@@ -16,6 +16,23 @@ alias {é,ö}yt='f(){
 }
 f'
 
+alias {é,ö}bump='f(){
+	if [ -f package.json ]; then
+		# extract which one to bump
+		[[ "$1" =~ .*(major|minor|patch)$ ]]
+
+		npm version \
+			--commit-hooks false \
+			--git-tag-version false \
+			${BASH_REMATCH[1]:-patch}
+	else
+		echo "  ERROR: unsupported project"
+		echo "  ERROR: ./package.json not found"
+	fi
+	unset -f f
+}
+f'
+
 # bluetooth devices
 alias {é,ö}bt='f(){
 	if [ "$1" == "off" ]; then
