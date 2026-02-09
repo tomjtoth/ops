@@ -1,0 +1,14 @@
+[Unit]
+Description=port forward for ArgoCD
+After=network-online.target k3s-tunnel.service
+Wants=network-online.target
+Requires=k3s-tunnel.service
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=10
+ExecStart=kubectl -n argocd port-forward svc/argocd-server 55526:80
+
+[Install]
+WantedBy=default.target
