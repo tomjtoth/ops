@@ -1,12 +1,7 @@
 #!/bin/bash
 
 
-FSTAB=/etc/fstab
 SUDO_CONF=/etc/sudoers.d/99_wheel
-JOURNAL_CONF=/etc/systemd/journald.conf.d/00-journal-size.conf
-SSH_WHEEL_CONF=/etc/ssh/sshd_config.d/01_wheel.conf
-LVM_CONF=/etc/lvm/lvm.conf
-GRUB_CUSTOM=/etc/grub.d/40_custom
 
 
 TEXT_YELLOW='\033[93m'
@@ -64,15 +59,17 @@ fi
 
 
 function limiting_systemd_journals_size() {
-    if [ ! -f $JOURNAL_CONF ]; then
+    local conf=/etc/systemd/journald.conf.d/00-journal-size.conf
+
+    if [ ! -f $conf ]; then
         log
 
-        mkdir ${JOURNAL_CONF%/*} 2>/dev/null
+        mkdir ${conf%/*} 2>/dev/null
 
         printf '%s\n' \
             [Journal] \
             SystemMaxUse=50M \
-            > $JOURNAL_CONF
+            > $conf
 
         success
     else
@@ -228,15 +225,17 @@ function installing_paru() {
 
 
 function configuring_ssh() {
-    if [ ! -f $SSH_WHEEL_CONF ]; then
+    local conf=/etc/ssh/sshd_config.d/01_wheel.conf
+
+    if [ ! -f $conf ]; then
         log
 
         printf '%-20s %s\n' \
             Port 55522 \
             AllowGroups wheel \
             PermitRootLogin no \
-            > $SSH_WHEEL_CONF
-        
+            > $conf
+
         success
     else
         skip
@@ -296,10 +295,12 @@ function importing_dconf_settings() {
 
 
 function enabling_discards_in_LVM() {
-    if ! grep -qP '^\s+issue_discards\s*=\s*1' $LVM_CONF; then
+    local conf=/etc/lvm/lvm.conf
+
+    if ! grep -qP '^\s+issue_discards\s*=\s*1' $conf; then
         log
 
-        sed -i -E "s/^(\s*)#(\s*issue_discards)\s*=\s*0$/\1 \2 = 1/" $LVM_CONF
+        sed -i -E "s/^(\s*)#(\s*issue_discards)\s*=\s*0$/\1 \2 = 1/" $conf
 
         success
     else
@@ -309,13 +310,14 @@ function enabling_discards_in_LVM() {
 
 
 function adding_discard_options_in_fstab() {
-    local uuids=($(lsblk -o uuid --filter 'ROTA != 1'))
+    local conf=/etc/fstab \
+        uuids=($(lsblk -o uuid --filter 'ROTA != 1'))
     uuids=$(join_by_char "|" ${uuids[@]:1})
-    
-    if ! grep -qP '^UUID=('"$uuids"').+discard\s+\d+\s+\d+\s*$' $FSTAB; then
+
+    if ! grep -qP '^UUID=('"$uuids"').+discard\s+\d+\s+\d+\s*$' $conf; then
         log
 
-        sed -i -E "s/^(UUID=($uuids)\s+.+)(\s+[0-9]+\s+[0-9]+\s*)$/\1,discard \3/mg" $FSTAB
+        sed -i -E "s/^(UUID=($uuids)\s+.+)(\s+[0-9]+\s+[0-9]+\s*)$/\1,discard \3/mg" $conf
 
         success
     else
@@ -325,13 +327,15 @@ function adding_discard_options_in_fstab() {
 
 
 function adding_menu_entries_to_GRUB() {
-    if ! grep -qP 'Shutdown|Restart' $GRUB_CUSTOM; then
+    local conf=/etc/grub.d/40_custom
+
+    if ! grep -qP 'Shutdown|Restart' $conf; then
         log
 
         printf '%s\n' \
             'menuentry "Restart" { reboot }' \
             'menuentry "Shutdown" { halt }' \
-            >> $GRUB_CUSTOM
+            >> $conf
         grub-mkconfig -o /boot/grub/grub.cfg
 
         success
