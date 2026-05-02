@@ -1,0 +1,37 @@
+---
+default_locale: hu_HU.UTF-8
+
+laptop_username: ttj
+
+dotfiles_in_home:
+  - .profile
+  - .bash_profile
+  - .bashrc
+  - .bash_aliases
+
+utils:
+  - nano
+  - mc
+  - htop
+  - ncdu
+
+boinc_ubuntu:
+  - boinc-client
+  - boinctui
+
+boinc_arch:
+  - boinc-nox
+  - boinctui
+
+systemd_services:
+  - docker
+  - gdm
+  - ntpd
+  - bluetooth
+  - NetworkManager
+
+systemd_user_services:
+  - socks5-tunnel
+  - k3s-tunnel
+  - argocd
+  - longhorn

@@ -1,0 +1,4 @@
+---
+collections:
+  # for pacman
+  - name: community.general
