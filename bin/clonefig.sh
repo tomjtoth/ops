@@ -348,28 +348,3 @@ enabling_systemd_services
 enabling_discards_in_LVM
 adding_discard_options_in_fstab
 adding_menu_entries_to_GRUB
-
-
-# # swapfile
-# dd if=/dev/zero of=/swapfile bs=1M count=1k status=progress
-# chmod 0600 /swapfile
-# mkswap -U clear /swapfile
-# echo "/swapfile none swap defaults 0 0" >> $FSTAB
-# echo "vm.swappiness=10" > /etc/sysctl.d/99-swappiness.conf
-
-
-# shellcheck disable=SC2188
-# conf_ntfs(){
-#     fdisk -l
-#     echo -ne "\nwhich partition (/dev/____)? "
-#     local UUID sdXY
-#     read sdXY
-#     UUID=$(blkid | grep -Po '^\/dev\/'${sdXY}'.+UUID="\K[\w-]+(?=")')
-#     [ -z $TEST_RUN ] && mkdir /home/$sdXY
-#     [ -z $TEST_RUN ] && \
-#         echo -e "\n# NTFS data partition" \
-#             "\nUUID=$UUID	/home/$sdXY	ntfs	rw,user,auto,umask=0022,uid=1000,gid=1000,exec	0	2" >> $FSTAB
-#     [ -n "$UUID" ] && [ -z $TEST_RUN ] && echo -e "\n# for dual booting" \
-#         "\nGRUB_DISABLE_OS_PROBER=false" >> /etc/default/grub
-# }
-
