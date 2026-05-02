@@ -7,10 +7,7 @@ Wants=network-online.target
 Type=simple
 Restart=always
 RestartSec=10
-EnvironmentFile=%h/.home/.env
-ExecStart=ssh -N -q -A -D 1080 \
-    -R 0:localhost:55523 \
-    ${SOCKS5_TUNNEL_HOST}
+ExecStart=ssh -N -q -A -D 1080 -R 0:localhost:55523 rk3328
 
 [Install]
 WantedBy=default.target
