@@ -1,4 +1,7 @@
 ---
 collections:
+  # for synchronize
+  - name: ansible.posix
+
   # for pacman
   - name: community.general

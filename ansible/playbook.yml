@@ -104,7 +104,13 @@
           copy:
             dest: "~/{{ item }}"
             src: "{{ playbook_dir }}/../{{ item }}"
-          loop: "{{ bash_conf }}"
+          loop: "{{ conf_files }}"
+
+        - name: Sync bin
+          synchronize:
+            dest: ~/bin/
+            src: "{{ playbook_dir }}/../bin/"
+            delete: true
 
     - name: Laptops-only
       when: "'laptops' in group_names"
@@ -114,7 +120,13 @@
             path: "~/{{ item }}"
             src: "{{ playbook_dir }}/../{{ item }}"
             state: link
-          loop: "{{ bash_conf }}"
+          loop: "{{ conf_files }}"
+
+        - name: Symlink ~/bin
+          file:
+            path: ~/bin
+            src: "{{ playbook_dir }}/../bin"
+            state: link
 
         - name: Deploy user-level systemd services
           file:

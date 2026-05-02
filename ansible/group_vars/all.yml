@@ -3,8 +3,7 @@ default_locale: hu_HU.UTF-8
 
 laptop_username: ttj
 
-bash_conf:
-  - bin
+conf_files:
   - .profile
   - .bash_profile
   - .bashrc
