@@ -284,16 +284,6 @@ function enabling_systemd_services() {
 }
 
 
-# this must be revised as selective keybindings should be passed on only
-function importing_dconf_settings() {
-    log
-
-    sudo -u \#1000 curl -L ttj.hu/linux/dconf-dump | dconf load /
-
-    success
-}
-
-
 function enabling_discards_in_LVM() {
     local conf=/etc/lvm/lvm.conf
 

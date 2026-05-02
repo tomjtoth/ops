@@ -47,6 +47,19 @@ alias {é,ö}tar='f(){
 }
 f'
 
+alias {é,ö}dconf='f(){
+	if [ "$1" == "load" ]; then
+		if [ -f $2 ]; then
+			dconf load / < "$2"
+		fi
+	else
+		dconf dump /
+	fi
+
+	unset -f f
+}
+f'
+
 # systemctl
 alias {é,ö}ss="sudo systemctl"
 alias {é,ö}ssdr="sudo systemctl daemon-reload"
