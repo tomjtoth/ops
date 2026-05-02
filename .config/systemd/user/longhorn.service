@@ -1,0 +1,14 @@
+[Unit]
+Description=port forward for Longhorn
+After=network-online.target k3s-tunnel.service
+Wants=network-online.target
+Requires=k3s-tunnel.service
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=10
+ExecStart=kubectl -n longhorn-system port-forward svc/longhorn-frontend 55527:80
+
+[Install]
+WantedBy=default.target
