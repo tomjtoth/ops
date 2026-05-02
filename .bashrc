@@ -12,9 +12,3 @@ HISTFILESIZE=2000
 shopt -s histappend
 
 [ -f ~/.bash_aliases ] && . ~/.bash_aliases
-
-# if ! shopt -oq posix; then
-#   if [ -r /usr/share/bash-completion/bash_completion ]; then
-#     . /usr/share/bash-completion/bash_completion
-#   fi
-# fi
