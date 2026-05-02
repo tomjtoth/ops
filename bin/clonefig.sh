@@ -57,6 +57,12 @@ if [ $(id -u) -ne 0 ]; then
 	exit 1
 fi
 
+if [ -z "$1" ]; then
+    err "pass primary username"
+    exit 1
+fi
+
+user=$1
 
 function limiting_systemd_journals_size() {
     local conf=/etc/systemd/journald.conf.d/00-journal-size.conf
@@ -99,17 +105,9 @@ function adding_primary_user() {
     if ! grep -q :1000: /etc/passwd; then
         log
 
-        local existing_users
+        useradd -m -G wheel,docker,boinc $user
+        passwd $user
 
-        mapfile -t existing_users < <(cut -d':' -f 1 < /etc/passwd)
-        while true; do
-            read -erp "type primary username: " user
-            [[ " ${existing_users[*]} " != *" $user "* ]] && break
-            err "${user} is already taken, try another one!"
-        done
-        useradd -m -G wheel,docker,boinc "$user"
-        passwd "$user"
-        
         success
     else
         skip
