@@ -1,6 +1,8 @@
 # If not running interactively, don't do anything
 [[ $- != *i* ]] && return
 
+PS1='[\[\e[91;1m\]\u\[\e[0m\]@\[\e[92;1m\]\H\[\e[0m\]]\$ '
+
 shopt -s checkwinsize
 
 # ignore dupes and lines starting with a space
