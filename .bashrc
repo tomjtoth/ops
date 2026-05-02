@@ -1,7 +1,7 @@
 # If not running interactively, don't do anything
 [[ $- != *i* ]] && return
 
-PS1='[\[\e[91;1m\]\u\[\e[0m\]@\[\e[92;1m\]\H\[\e[0m\] \W]\$ '
+PS1='[\[\e[92;1m\]\u\[\e[0m\]@\[\e[91;1m\]\H\[\e[0m\] \[\e[94;1m\]\W\[\e[0m\]]\$ '
 
 shopt -s checkwinsize
 
