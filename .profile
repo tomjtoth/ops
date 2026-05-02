@@ -1,7 +1,7 @@
-[ -d ~/bin ] && export PATH="$PATH:~/bin"
-[ -d ~/.local/bin ] && export PATH="$PATH:~/.local/bin"
+[ -e ~/bin ] && export PATH="$PATH:~/bin"
+[ -e ~/.local/bin ] && export PATH="$PATH:~/.local/bin"
 
-[ -d ~/.cargo/bin ] && export PATH="$PATH:~/.cargo/bin"
+[ -e ~/.cargo/bin ] && export PATH="$PATH:~/.cargo/bin"
 
 # required by Dioxus for compiling to Android
 export JAVA_HOME=/usr/lib/jvm/java-21-openjdk
