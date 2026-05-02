@@ -7,6 +7,11 @@
     - name: Run as root
       become: true
       block:
+        - name: Install utils
+          apt:
+            update_cache: true
+            package: "{{ utils }}"
+
         - name: Set locale
           copy:
             dest: /etc/locale.conf
@@ -46,7 +51,7 @@
           lineinfile:
             path: /etc/fstab
             regexp: "^/swapfile"
-            line: "/swapfile none swap defaults,pri=10 0 0"
+            line: "/swapfile none swap defaults,pri=10,discard 0 0"
           register: swap_fstab
 
         - name: Activate swap immediately
@@ -97,7 +102,7 @@
         - name: Copy ~/.*
           copy:
             dest: "~/{{ item }}"
-            src: "{{ item }}"
+            src: "{{ playbook_dir }}/../{{ item }}"
           loop: "{{ dotfiles_in_home }}"
 
     - name: Laptops-only
@@ -106,13 +111,20 @@
         - name: Symlink ~/.*
           file:
             path: "~/{{ item }}"
-            src: "{{ item }}"
+            src: "{{ playbook_dir }}/../{{ item }}"
             state: link
           loop: "{{ dotfiles_in_home }}"
 
+        - name: Deploy user-level systemd services
+          file:
+            path: "~/.config/systemd/user/{{ item }}.service"
+            src: "{{ playbook_dir }}/../.config/systemd/user/{{ item }}.service"
+            state: link
+          loop: "{{ systemd_user_services }}"
+
         - name: Enable & start user-level systemd services
           systemd:
-            name: "{{ ansible_facts['playbook_dir'] }}/../.config/systemd/user/{{ item }}"
+            name: "{{ item }}"
             state: started
             enabled: true
             scope: user

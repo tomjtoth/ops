@@ -1,0 +1,111 @@
+[org/gnome/desktop/calendar]
+show-weekdate=true
+
+[org/gnome/desktop/interface]
+clock-format='24h'
+clock-show-seconds=false
+clock-show-weekday=true
+color-scheme='default'
+font-antialiasing='grayscale'
+font-hinting='slight'
+show-battery-percentage=true
+toolkit-accessibility=false
+
+[org/gnome/desktop/peripherals/touchpad]
+speed=0.0
+tap-button-map='lmr'
+tap-to-click=true
+two-finger-scrolling-enabled=true
+
+[org/gnome/desktop/wm/keybindings]
+move-to-workspace-left=['<Shift><Super>iacute']
+move-to-workspace-right=['<Shift><Super>y']
+switch-to-workspace-left=['<Super>iacute']
+switch-to-workspace-right=['<Super>y']
+
+[org/gnome/desktop/wm/preferences]
+button-layout='appmenu:close'
+resize-with-right-button=true
+
+[org/gnome/settings-daemon/plugins/color]
+night-light-enabled=true
+night-light-schedule-automatic=true
+night-light-schedule-from=23.0
+night-light-schedule-to=8.0
+night-light-temperature=uint32 3670
+
+[org/gnome/settings-daemon/plugins/media-keys]
+custom-keybindings=['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom2/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom3/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom4/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom5/']
+help=@as []
+magnifier=['<Super>z']
+next=['<Super>F3']
+play=['<Super>F1']
+previous=['<Super>F2']
+
+[org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0]
+binding='<Super>w'
+command='firefox'
+name='www browser'
+
+[org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1]
+binding='<Super>Return'
+command='gnome-terminal'
+name='terminal'
+
+[org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom2]
+binding='<Super>e'
+command='nautilus --new-window'
+name='file manager'
+
+[org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom3]
+binding='<Super>k'
+command='firefox calendar.google.com'
+name='calendar'
+
+[org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom4]
+binding='<Super>c'
+command='firefox contacts.google.com'
+name='contacts'
+
+[org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom5]
+binding='<Super>i'
+command='keepassxc'
+name='keepass'
+
+[org/gnome/shell]
+favorite-apps=['org.gnome.Terminal.desktop', 'code-oss.desktop', 'org.keepassxc.KeePassXC.desktop', 'firefox.desktop', 'org.qbittorrent.qBittorrent.desktop']
+
+[org/gnome/shell/app-switcher]
+current-workspace-only=true
+
+[org/gnome/shell/extensions/appindicator]
+custom-icons=@a(sss) []
+tray-pos='center'
+
+[org/gnome/shell/extensions/executor]
+center-active=false
+center-commands-json='{"commands":[]}'
+click-on-output-active=true
+left-active=false
+left-commands-json='{"commands":[]}'
+left-index=1
+location=2
+right-commands-json="{\"commands\":[{\"isActive\":true,\"command\":\"ping 1.1.1.1 -c 1 | grep -Po '\\\\d+\\\\.\\\\d+ ms' | head -n 1\",\"interval\":1,\"uuid\":\"dbad824e-8422-4b09-9437-8a45f7c8a6c6\"},{\"isActive\":true,\"command\":\"echo '    '\",\"interval\":3600,\"uuid\":\"34912813-bf50-4608-aa29-89edf9e4d2b4\"},{\"isActive\":true,\"command\":\"df -h --output=avail,pcent,target /home | tail -n 1\",\"interval\":60,\"uuid\":\"1b965cb5-7003-4c5c-b969-216521cafe83\"}]}"
+right-index=1
+
+[org/gnome/shell/keybindings]
+screenshot=['Print']
+screenshot-window=['<Alt>Print']
+show-screen-recording-ui=['<Alt><Super>Print']
+show-screenshot-ui=['<Super>Print']
+
+[org/gnome/terminal/legacy]
+default-show-menubar=true
+menu-accelerator-enabled=false
+
+[system/locale]
+region='hu_HU.UTF-8'
+
+[org/gnome/desktop/input-sources]
+mru-sources=[('xkb', 'us')]
+sources=[('xkb', 'hu'), ('xkb', 'fi')]

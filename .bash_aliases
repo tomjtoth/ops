@@ -27,7 +27,14 @@ alias {é,ö}sleep='f() {
 }
 f'
 
-alias {é,ö}ansible=ansible-playbook -i ansible/hosts.ini ansible/playbook.yml
+alias {é,ö}ansible='f(){
+	local path=~/Projects/IT/ops/ansible
+
+	ansible-playbook -i "$path/hosts.ini" "$path/playbook.yml" $@
+
+	unset -f f
+}
+f'
 
 alias {é,ö}lz4='f(){
 	tar cf - "$1" | lz4 -z --best > "${1%%/}.tar.lz4"
