@@ -32,6 +32,11 @@ function err() {
 }
 
 
+function raw_err() {
+    printf "\n\t${TEXT_RED}ERROR${TEXT_RESET}: ${TEXT_BOLD}%s${TEXT_RESET}\n\n" "$*"
+}
+
+
 function success() {
     printf "\n\t${TEXT_GREEN}DONE${TEXT_RESET}\n\n"
 }
@@ -51,23 +56,33 @@ function join_by_char() {
 }
 
 
+if [ -z "$BASH_VERSION" ]; then
+    raw_err "This script must be run with BASH"
+    exit 1
+fi
+
+
 # shellcheck disable=SC2046
 if [ $(id -u) -ne 0 ]; then
-	err this script must be run as root
+	err "This script must be run as root"
 	exit 1
 fi
 
 if [ -z "$1" ]; then
-    err "pass primary username"
+    err "Pass primary username as \$1"
     exit 1
 fi
 
+# what host is this?
+[ -f /bin/pacman ] && ARCH=1
+[ -f /sbin/apk ] && ALPINE=1
+
 user=$1
 
-function limiting_systemd_journals_size() {
+function limiting_systemd_journal_size() {
     local conf=/etc/systemd/journald.conf.d/00-journal-size.conf
 
-    if [ ! -f $conf ]; then
+    if [ -v ARCH ] && [ ! -f $conf ]; then
         log
 
         mkdir ${conf%/*} 2>/dev/null
@@ -88,10 +103,16 @@ function enabling_sudo_for_group_wheel() {
     if [ ! -f $SUDO_CONF ]; then
         log
 
+        local line="%wheel ALL=(ALL:ALL) ALL"
+
+        # NOPASSWD on Alpine VMs
+        [ -v ALPINE ] && line='%wheel ALL=(ALL) NOPASSWD: ALL'
+
         printf '%s\n' \
             "# users in group wheel" \
-            "%wheel ALL=(ALL:ALL) ALL\n" \
+            "$line\n" \
             > $SUDO_CONF
+
         chmod 0440 $SUDO_CONF
 
         success
@@ -105,8 +126,15 @@ function adding_primary_user() {
     if ! grep -q :1000: /etc/passwd; then
         log
 
-        useradd -m -G wheel,docker,boinc $user
-        passwd $user
+        if [ -v ARCH ]; then
+            useradd -m -G wheel,docker,boinc $user
+            passwd $user
+        elif [ -v ALPINE ]; then
+            adduser $user
+            adduser $user wheel
+            # set login shell to BASH
+            sed -i -r 's/^('$user':.+:\/bin)\/sh/\1\/bash/' /etc/passwd
+         fi
 
         success
     else
@@ -118,7 +146,7 @@ function adding_primary_user() {
 function configuring_pacman() {
     local conf=/etc/pacman.conf
 
-    if grep -q '^#Color' $conf; then
+    if [ -v ARCH ] && grep -q '^#Color' $conf; then
         log
 
         sed -i \
@@ -136,6 +164,8 @@ function configuring_pacman() {
 
 
 function installing_missing_packages() {
+    [ -v ALPINE ] && skip && return 0
+    
     local missing_pkgs pkgs=(
 
         # cli utils
@@ -189,7 +219,7 @@ function installing_missing_packages() {
 function configuring_makepkg() {
     local conf=/etc/makepkg.conf
 
-    if grep -q '^#MAKEFLAGS=' $conf; then
+    if [ -v ARCH ] && grep -q '^#MAKEFLAGS=' $conf; then
         sed -i \
             's/^#MAKEFLAGS="-j2"$/MAKEFLAGS="-j'"$(nproc)"'"/m' \
             $conf
@@ -202,7 +232,7 @@ function configuring_makepkg() {
 
 
 function installing_paru() {
-    if [ ! -f /usr/bin/paru ]; then
+    if [ -v ARCH ] && [ ! -f /usr/bin/paru ]; then
         log
 
         mkdir /tmp/clonefig
@@ -228,10 +258,19 @@ function configuring_ssh() {
     if [ ! -f $conf ]; then
         log
 
-        printf '%-20s %s\n' \
-            Port 55522 \
-            AllowGroups wheel \
-            PermitRootLogin no \
+        local opts=(
+            Port            55522
+            AllowGroups     wheel
+            PermitRootLogin no
+        )
+
+        [ -v ALPINE ] && opts+=(
+            PubkeyAuthentication    yes
+            PasswordAuthentication  no
+        )
+
+        printf '%-25s %s\n' \
+            ${opts[@]} \
             > $conf
 
         success
@@ -242,7 +281,7 @@ function configuring_ssh() {
 
 
 function enabling_autologin_in_GDM() {
-    if ! grep -q '^AutomaticLoginEnable=True$' /etc/gdm/custom.conf; then
+    if [ -v ARCH ] && ! grep -q '^AutomaticLoginEnable=True$' /etc/gdm/custom.conf; then
         log
 
         sed -i '/^\[daemon\]$/aAutomaticLogin='"$user"'\nAutomaticLoginEnable=True' \
@@ -256,7 +295,7 @@ function enabling_autologin_in_GDM() {
 
 
 function relocating_docker(){
-    if [ ! -d /home/docker ]; then
+    if [ -v ARCH ] && [ ! -d /home/docker ]; then
         log
 
         mkdir /home/docker
@@ -270,7 +309,7 @@ function relocating_docker(){
 
 
 function enabling_systemd_services() {
-    if [ "$(systemctl is-enabled gdm)" != "enabled" ]; then
+    if [ -v ARCH ] && [ "$(systemctl is-enabled gdm)" != "enabled" ]; then
         log
 
         for svc in docker gdm ntpd bluetooth NetworkManager; do
@@ -285,7 +324,7 @@ function enabling_systemd_services() {
 function enabling_discards_in_LVM() {
     local conf=/etc/lvm/lvm.conf
 
-    if ! grep -qP '^\s+issue_discards\s*=\s*1' $conf; then
+    if [ -v ARCH ] && ! grep -qP '^\s+issue_discards\s*=\s*1' $conf; then
         log
 
         sed -i -E "s/^(\s*)#(\s*issue_discards)\s*=\s*0$/\1 \2 = 1/" $conf
@@ -298,6 +337,8 @@ function enabling_discards_in_LVM() {
 
 
 function adding_discard_options_in_fstab() {
+    [ -v ALPINE ] && skip && return 0
+
     local conf=/etc/fstab \
         uuids=($(lsblk -o uuid --filter 'ROTA != 1'))
     uuids=$(join_by_char "|" ${uuids[@]:1})
@@ -317,7 +358,7 @@ function adding_discard_options_in_fstab() {
 function adding_menu_entries_to_GRUB() {
     local conf=/etc/grub.d/40_custom
 
-    if ! grep -qP 'Shutdown|Restart' $conf; then
+    if [ -v ARCH ] && ! grep -qP 'Shutdown|Restart' $conf; then
         log
 
         printf '%s\n' \
@@ -334,7 +375,7 @@ function adding_menu_entries_to_GRUB() {
 
 
 # calling each func in order
-limiting_systemd_journals_size
+limiting_systemd_journal_size
 enabling_sudo_for_group_wheel
 adding_primary_user
 configuring_pacman
