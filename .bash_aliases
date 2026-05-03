@@ -96,11 +96,11 @@ if [ -f /usr/bin/pacman ]; then
 	INFO="$AUR -Si"
 	LIST="pacman -Ql"
 	UPDATE="$AUR -Syyu --noconfirm && sudo paccache -k 0 -r"
-	
+
 	alias {é,ö}u="sudo pacman -U --asdeps"
 	alias {éáű,öäå}="$AUR -Ss"
 	alias {é,ö}fix="sudo pacman-key --refresh-keys"
-	
+
 # on a debian derivative
 elif [ -f /usr/bin/apt ]; then
 	INSTALL="sudo apt update && sudo apt install"
@@ -109,14 +109,14 @@ elif [ -f /usr/bin/apt ]; then
 	INFO="apt show"
 	LIST="dpkg-query -L"
 	UPDATE="sudo apt autoremove && sudo apt update && sudo apt full-upgrade"
-	
-# on Android/Termux
-elif [ -f /data/data/com.termux/files/usr/bin/pkg ]; then
-	INSTALL="pkg install"
-	REMOVE="pkg uninstall"
-	SEARCH="pkg search"
-	LIST="pkg files"
-	UPDATE="pkg upgrade"
+
+# on Alpine
+elif [ -f /sbin/apk ]; then
+	INSTALL="sudo apk add"
+	REMOVE="sudo apk del"
+	SEARCH="apk search"
+	LIST="apk info -L"
+	UPDATE="sudo apk update && sudo apk upgrade"
 fi
 
 alias {éá,öä}="$SEARCH"
