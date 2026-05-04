@@ -3,5 +3,5 @@ collections:
   # for synchronize
   - name: ansible.posix
 
-  # for pacman
+  # for pacman & apk
   - name: community.general

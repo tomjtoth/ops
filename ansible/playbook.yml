@@ -137,6 +137,20 @@
                 name: zram-init
               when: zram_init_conf.changed
 
+        - name: Configure iptables via custom hook on Alpine
+          when: ansible_facts["distribution"] == "Alpine"
+          block:
+            - name: Copy iptables rules
+              copy:
+                dest: /root/iptables-rules.sh
+                src: iptables-rules.sh
+                mode: "0700"
+              register: iptables_ttj
+
+            - name: Apply rules atomically
+              shell: /root/iptables-rules.sh
+              when: iptables_ttj.changed
+
     - when: "'servers' in group_names"
       block:
         - name: Copy ~/.* to server
