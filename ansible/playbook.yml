@@ -35,69 +35,109 @@
               LC_TELEPHONE={{ default_locale }}
               LC_TIME={{ default_locale }}
 
-        - name: Determine swapfile size
-          set_fact:
-            swap_size: "{{ '1G' if ansible_facts['memtotal_mb'] > 1024 else '4G' }}"
+        - name: Configure !swapfile on Arch & Ubuntu
+          when: ansible_facts["distribution"] in ["Ubuntu", "Arch"]
+          block:
+            - name: Determine swapfile size
+              set_fact:
+                swap_size: "{{ '1G' if ansible_facts['memtotal_mb'] > 1024 else '4G' }}"
 
-        - name: Create, secure, and format swap file
-          shell: |
-            fallocate -l {{ swap_size }} /swapfile &&
-            chmod 0600 /swapfile &&
-            mkswap /swapfile
-          args:
-            creates: /swapfile
+            - name: Create, secure, and format swap file
+              shell: |
+                fallocate -l {{ swap_size }} /swapfile &&
+                chmod 0600 /swapfile &&
+                mkswap /swapfile
+              args:
+                creates: /swapfile
 
-        - name: Ensure swap is in fstab and active
-          lineinfile:
-            path: /etc/fstab
-            regexp: "^/swapfile"
-            line: "/swapfile none swap defaults,pri=10,discard 0 0"
-          register: swap_fstab
+            - name: Ensure swap is in fstab and active
+              lineinfile:
+                path: /etc/fstab
+                regexp: "^/swapfile"
+                line: "/swapfile none swap defaults,pri=10,discard 0 0"
+              register: swap_fstab
 
-        - name: Activate swap immediately
-          command: swapon -a
-          when: swap_fstab.changed
+            - name: Activate swap immediately
+              command: swapon -a
+              when: swap_fstab.changed
 
-        - name: Ensure zram module is loaded
-          copy:
-            dest: /etc/modules-load.d/zram.conf
-            content: zram
+        - name: Enable zram on Arch
+          when: ansible_facts["distribution"] == "Arch"
+          block:
+            - name: Install package
+              pacman:
+                state: present
+                package: zram-generator
 
-        - name: Create zram-setup service
-          copy:
-            dest: /etc/systemd/system/zram-setup.service
-            content: |
-              [Unit]
-              Description=Setup zram swap
-              After=multi-user.target
+            - name: Create service
+              copy:
+                dest: /etc/systemd/zram-generator.conf
+                content: |
+                  [zram0]
+              register: zram_service
 
-              [Service]
-              Type=oneshot
-              RemainAfterExit=yes
-              ExecStartPre=/sbin/modprobe zram
+            - name: Enable and start service
+              systemd:
+                name: zram-generator
+                enabled: yes
+                state: restarted # Restarted ensures it applies changes if you edit the task
+                daemon_reload: yes
+              when: zram_service.changed
 
-              # Reset ensures we can change algorithm/size if already initialized
-              ExecStartPre=-/bin/sh -c 'echo 1 > /sys/block/zram0/reset'
-              ExecStartPre=/bin/sh -c 'echo zstd > /sys/block/zram0/comp_algorithm'
-              ExecStartPre=/bin/sh -c 'echo {{ (ansible_facts["memtotal_mb"] * 4 // 10) }}M > /sys/block/zram0/disksize'
-              ExecStart=/sbin/mkswap /dev/zram0
-              ExecStartPost=/sbin/swapon /dev/zram0 -p 100
-              ExecStop=/sbin/swapoff /dev/zram0
+        - name: Enable zram on Ubuntu
+          when: ansible_facts["distribution"] == "Ubuntu"
+          block:
+            - name: Install zram-tools
+              apt:
+                update_cache: true
+                package: zram-tools
+                state: present
 
-              [Install]
-              WantedBy=multi-user.target
-          register: zram_service
+            - name: Configure zramswap ALGO
+              lineinfile:
+                path: /etc/default/zramswap
+                regexp: "^#?ALGO="
+                line: "ALGO=zstd"
+              register: zram_algo
 
-        - name: Enable and start zram-setup
-          systemd:
-            name: zram-setup
-            enabled: yes
-            state: restarted # Restarted ensures it applies changes if you edit the task
-            daemon_reload: yes
-          when: zram_service.changed
+            - name: Configure zramswap SIZE
+              lineinfile:
+                path: /etc/default/zramswap
+                regexp: "^#?PERCENT="
+                line: "PERCENT=50"
+              register: zram_size
 
-    - name: Servers-only
-      when: "'servers' in group_names"
+            - name: Enable and start zramswap
+              systemd:
+                name: zramswap
+                enabled: yes
+                state: restarted # Restarted ensures it applies changes if you edit the task
+                daemon_reload: yes
+              when: zram_algo.changed or zram_size.changed
+
+        - name: Enable zram on Alpine
+          when: ansible_facts["distribution"] == "Alpine"
+          block:
+            - name: Install zram-init
+              apk:
+                state: present
+                name: zram-init
+
+            - name: Configure zram-init
+              lineinfile:
+                path: /etc/conf.d/zram-init
+                regexp: "^num_devices="
+                line: "num_devices=1"
+              register: zram_init_conf
+
+            - name: Enable and start service
+              service:
+                state: restarted
+                enabled: true
+                name: zram-init
+              when: zram_init_conf.changed
+
+    - when: "'servers' in group_names"
       block:
         - name: Copy ~/.*
           copy:
