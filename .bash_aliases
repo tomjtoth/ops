@@ -14,20 +14,18 @@ fi
 
 alias {é,ö}s="sudo -E -s"
 alias {é,ö}p='ping 1.1.1.1'
-alias {é,ö}reminders='sed -i -E "s/^(source .+\/reminders.sh\)( 2>\/dev\/null)?)$/# \1/g" ~/.bashrc'
 
 alias {é,ö}sleep='f() {
 	[ -n "$1" ] && \
 		echo "going to suspend in $1" && \
 		sleep $1
-	#playerctl pause
-	#swaylock -f -c 000000
 	systemctl -i suspend
+
 	unset -f f
 }
 f'
 
-alias {é,ö}ansible='f(){
+alias {é,ö}ansible='f() {
 	local path=~/Projects/IT/ops/ansible
 
 	ansible-playbook -i "$path/hosts.ini" "$path/playbook.yml" $@
@@ -36,25 +34,25 @@ alias {é,ö}ansible='f(){
 }
 f'
 
-alias {é,ö}lz4='f(){
+alias {é,ö}lz4='f() {
 	tar cf - "$1" | lz4 -z --best > "${1%%/}.tar.lz4"
 	unset -f f
 }
 f'
 
-alias {é,ö}xz='f(){
+alias {é,ö}xz='f() {
 	tar cf - "$1" | xz -z -9 > "${1%%/}.tar.xz"
 	unset -f f
 }
 f'
 
-alias {é,ö}tar='f(){
+alias {é,ö}tar='f() {
 	tar cf "${1%/}.tar""$1"
 	unset -f f
 }
 f'
 
-alias {é,ö}dconf='f(){
+alias {é,ö}dconf='f() {
 	if [ "$1" == "load" ]; then
 		if [ -f $2 ]; then
 			dconf load / < "$2"
@@ -84,13 +82,16 @@ if [ -f /usr/bin/pacman ]; then
 	fi
 	# shellcheck disable=SC2016
 	INSTALL='f() {
-		[ $(( ($(date +%s) - \
-			$(stat -c %Y /var/lib/pacman/sync/*.db \
-			| sort | tail -n 1))/60/60 )) -ge 24 ] && \
-			sudo pacman -Syy
+		local now=$(date +%s)
+		local oldest=$(stat -c %Y /var/lib/pacman/sync/*.db | sort | tail -n 1)
+		local flag=-S
+
+		[ $(( (now - oldest) / 60 / 60 )) -ge 24 ] && flag=-Syy
+		'$AUR' $flag $@
+
 		unset -f f
 	}
-	f && '$AUR' -S'
+	f'
 	REMOVE="sudo pacman -Rscn"
 	SEARCH="pacman -Ss"
 	INFO="$AUR -Si"
@@ -131,11 +132,14 @@ alias {ééé,ööö}="$UPDATE"
 alias {ééé,ööö}r="$UPDATE && systemctl -i reboot"
 alias {ééé,ööö}p="$UPDATE && systemctl -i poweroff"
 
+# cleanup after aliases are defined
+unset AUR UPDATE SEARCH INFO LIST INSTALL REMOVE
+
 
 # shellcheck disable=SC2139
 alias {é,ö}boinc='boinctui -b localhost -p "$(cat /var/lib/boinc-client/gui_rpc_auth.cfg)"'
 
-alias {é,ö}yt='f(){
+alias {é,ö}yt='f() {
 	local mode=${2:-mp3}
 	local FLAGS=" -x --audio-format mp3"
 	if [ "$mode" == "best" ]; then
@@ -146,7 +150,7 @@ alias {é,ö}yt='f(){
 }
 f'
 
-alias {é,ö}bump='f(){
+alias {é,ö}bump='f() {
 	# extract which one to bump
 	[[ "$1" =~ .*(major|minor|patch)$ ]]
 	local TRGT=${BASH_REMATCH[1]:-patch}
@@ -154,13 +158,12 @@ alias {é,ö}bump='f(){
 	if [ -f Cargo.toml ]; then
 		cargo set-version --bump $TRGT
 	elif [ -f package.json ]; then
-
 		npm version \
 			--commit-hooks false \
 			--git-tag-version false \
 			$TRGT
 
-		else
+	else
 		echo "  ERROR: unsupported project"
 	fi
 	unset -f f
