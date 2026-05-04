@@ -1,0 +1,13 @@
+#!/sbin/openrc-run
+
+description="iptables ruleset TTJ"
+
+depend() {
+    need net
+}
+
+start() {
+    ebegin "Applying iptables ruleset TTJ"
+    /usr/local/sbin/firewall-ttj.sh
+    eend $?
+}

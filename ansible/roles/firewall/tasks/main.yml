@@ -1,0 +1,34 @@
+---
+- name: Ensure /usr/local/sbin exists
+  file:
+    path: /usr/local/sbin
+    state: directory
+    mode: "0755"
+
+- name: Copy iptables rules to sbin
+  copy:
+    dest: /usr/local/sbin/firewall-ttj.sh
+    src: "{{ playbook_dir }}/files/firewall.sh"
+    mode: "0700"
+  register: firewall
+
+- name: Apply rules atomically
+  shell: /usr/local/sbin/firewall-ttj.sh
+  when: firewall.changed
+
+- name: Copy firewall-ttj service
+  when: ansible_facts['distribution'] == 'Alpine'
+  copy:
+    dest: /etc/init.d/firewall-ttj
+    src: firewall.openrc
+    mode: "0755"
+
+- name: Copy firewall-ttj service
+  when: ansible_facts['distribution'] == 'Ubuntu'
+  copy:
+    dest: /etc/systemd/system/firewall-ttj.service
+    src: firewall.service
+
+- service:
+    enabled: true
+    name: firewall-ttj

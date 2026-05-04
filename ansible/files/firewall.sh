@@ -1,7 +1,8 @@
 #!/bin/sh
 
+# This script is to be run on boot + when rules change
 
-# exit script on any "unhandled" non-zero return value
+# exit with failure on any "unhandled" non-zero return value
 set -e
 
 
@@ -38,14 +39,21 @@ $BIN -A $NEW -p tcp --dport 55522 -j ACCEPT
 $BIN -A $NEW -s 10.0.0.0/16 -p tcp --dport 10250 -m conntrack --ctstate NEW -j ACCEPT
 $BIN -A $NEW -s 10.0.0.0/16 -p udp --dport 8472 -m conntrack --ctstate NEW -j ACCEPT
 
+# if this is a k3s server
+if  [ -f /etc/systemd/system/multi-user.target.wants/k3s.service ] || \
+    [ -f /etc/runlevels/default/k3s ]; then
+    $BIN -A $NEW -s 10.0.0.0/16 -p tcp --dport 6443 -m conntrack --ctstate NEW -j ACCEPT
+fi
+
 # return control
 $BIN -A $NEW -j RETURN
 
 ### insert NEW chain at 1st place
 $BIN -I INPUT 1 -j $NEW
 
-# detach & delete OLD
+# detach, flush & delete OLD
 $BIN -D INPUT -j $OLD 2>/dev/null || true
+$BIN -F $OLD 2>/dev/null || true
 $BIN -X $OLD 2>/dev/null || true
 
 # enforce default DROP policies

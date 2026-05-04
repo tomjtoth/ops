@@ -13,8 +13,8 @@
     - role: zram
       tags: [zram]
 
-    - role: iptables
-      tags: [iptables]
+    - role: firewall
+      tags: [firewall]
       when: "'servers' in group_names"
 
     - role: home
