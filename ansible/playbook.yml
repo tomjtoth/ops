@@ -24,3 +24,7 @@
     - role: boinc
       tags: [boinc]
       when: "'boinc' in group_names"
+
+    - role: k3s
+      tags: [k3s]
+      when: ansible_facts["distribution"] == "Alpine"
