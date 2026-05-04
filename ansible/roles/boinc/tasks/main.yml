@@ -1,6 +1,6 @@
 ---
 - name: Install BOINC packages on Arch hosts
-  when: ansible_facts['distribution'] == 'Arch'
+  when: ansible_facts['distribution'] == 'Archlinux'
   pacman:
     name: "{{ boinc_arch }}"
     state: present
