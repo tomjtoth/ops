@@ -1,5 +1,5 @@
 ---
-- name: Configure new host
+- name: Configure hosts
   hosts: all
   vars_files:
     - group_vars/all.yml
@@ -7,11 +7,10 @@
     - name: Run as root
       become: true
       block:
-        - name: Install utils
-          when: "'servers' in group_names"
-          apt:
-            update_cache: true
-            package: "{{ utils }}"
+        - name: Install common utils
+          package:
+            name: "{{ utils }}"
+            state: present
 
         - name: Set locale
           copy:
