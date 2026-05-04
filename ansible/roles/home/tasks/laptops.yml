@@ -1,0 +1,28 @@
+---
+- name: Symlink ~/.* on laptop
+  file:
+    path: "~/{{ item }}"
+    src: "{{ playbook_dir }}/../{{ item }}"
+    state: link
+  loop: "{{ conf_files }}"
+
+- name: Symlink ~/bin on laptop
+  file:
+    path: ~/bin
+    src: "{{ playbook_dir }}/../bin"
+    state: link
+
+- name: Deploy user-level systemd services
+  file:
+    path: "~/.config/systemd/user/{{ item }}.service"
+    src: "{{ playbook_dir }}/../.config/systemd/user/{{ item }}.service"
+    state: link
+  loop: "{{ systemd_user_services }}"
+
+- name: Enable & start user-level systemd services
+  systemd:
+    name: "{{ item }}"
+    state: started
+    enabled: true
+    scope: user
+  loop: "{{ systemd_user_services }}"

@@ -1,0 +1,12 @@
+---
+- name: Copy ~/.* to server
+  copy:
+    dest: "~/{{ item }}"
+    src: "{{ playbook_dir }}/../{{ item }}"
+  loop: "{{ conf_files }}"
+
+- name: Sync ~/bin to server
+  synchronize:
+    dest: ~/bin/
+    src: "{{ playbook_dir }}/../bin/"
+    delete: true

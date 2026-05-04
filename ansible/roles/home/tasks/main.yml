@@ -1,0 +1,6 @@
+---
+- include_tasks: servers.yml
+  when: "'servers' in group_names"
+
+- include_tasks: laptops.yml
+  when: "'laptops' in group_names"

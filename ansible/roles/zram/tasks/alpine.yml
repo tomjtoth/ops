@@ -1,0 +1,19 @@
+---
+- name: Install zram-init
+  apk:
+    name: zram-init
+    state: present
+
+- name: Configure zram-init
+  lineinfile:
+    path: /etc/conf.d/zram-init
+    regexp: "^num_devices="
+    line: "num_devices=1"
+  register: zram_init_conf
+
+- name: Enable and start service
+  service:
+    state: restarted
+    enabled: true
+    name: zram-init
+  when: zram_init_conf.changed

@@ -1,0 +1,23 @@
+---
+- name: Determine swapfile size
+  set_fact:
+    swap_size: "{{ '1G' if ansible_facts['memtotal_mb'] > 1024 else '4G' }}"
+
+- name: Create, secure, and format swap file
+  shell: |
+    fallocate -l {{ swap_size }} /swapfile &&
+    chmod 0600 /swapfile &&
+    mkswap /swapfile
+  args:
+    creates: /swapfile
+
+- name: Ensure swap is in fstab and active
+  lineinfile:
+    path: /etc/fstab
+    regexp: "^/swapfile"
+    line: "/swapfile none swap defaults,pri=10,discard 0 0"
+  register: swap_fstab
+
+- name: Activate swap immediately
+  command: swapon -a
+  when: swap_fstab.changed

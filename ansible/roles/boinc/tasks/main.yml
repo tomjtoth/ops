@@ -1,0 +1,39 @@
+---
+- name: Install BOINC packages on Arch hosts
+  when: ansible_facts['distribution'] == 'Arch'
+  pacman:
+    name: "{{ boinc_arch }}"
+    state: present
+    update_cache: yes
+
+- name: Install BOINC packages on Ubuntu hosts
+  when: ansible_facts['distribution'] == 'Ubuntu'
+  apt:
+    name: "{{ boinc_ubuntu }}"
+    state: present
+    update_cache: yes
+
+- name: Ensure boinc-client service is running
+  systemd:
+    name: boinc-client
+    state: started
+    enabled: yes
+
+- name: Add user to boinc group
+  user:
+    name: "{{ ansible_facts['user_id'] }}"
+    groups: boinc
+    append: yes
+
+- name: Attach to BAM
+  become: false
+  shell: >-
+    boinccmd
+    --join_acct_mgr https://bam.boincstats.com/
+    "{{ lookup('env', 'BAM_USERNAME') }}"
+    "{{ lookup('env', 'BAM_PASSWORD') }}"
+  args:
+    creates: /var/lib/boinc/acct_mgr_login.xml
+  when: >
+    lookup('env', 'BAM_USERNAME') | length > 0 and
+    lookup('env', 'BAM_PASSWORD') | length > 0
