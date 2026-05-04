@@ -115,6 +115,7 @@ elif [ -f /sbin/apk ]; then
 	INSTALL="sudo apk add"
 	REMOVE="sudo apk del"
 	SEARCH="apk search"
+	INFO="apk info"
 	LIST="apk info -L"
 	UPDATE="sudo apk update && sudo apk upgrade"
 fi
