@@ -18,5 +18,13 @@
 
 - name: Copy htoprc
   copy:
-    dest: ~/.config/htop/htoprc
+    dest: ~/.config/htop/htoprc-ttj
     src: ~/.config/htop/htoprc
+  register: copied
+
+- name: Adjust AllCPUs widget
+  when: copied.changed
+  shell: |
+    sed -r 's/(column_meters_0=AllCPUs)2/\1/' \
+      ~/.config/htop/htoprc-ttj > \
+      ~/.config/htop/htoprc
