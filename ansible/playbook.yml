@@ -139,29 +139,28 @@
 
     - when: "'servers' in group_names"
       block:
-        - name: Copy ~/.*
+        - name: Copy ~/.* to server
           copy:
             dest: "~/{{ item }}"
             src: "{{ playbook_dir }}/../{{ item }}"
           loop: "{{ conf_files }}"
 
-        - name: Sync bin
+        - name: Sync ~/bin to server
           synchronize:
             dest: ~/bin/
             src: "{{ playbook_dir }}/../bin/"
             delete: true
 
-    - name: Laptops-only
-      when: "'laptops' in group_names"
+    - when: "'laptops' in group_names"
       block:
-        - name: Symlink ~/.*
+        - name: Symlink ~/.* on laptop
           file:
             path: "~/{{ item }}"
             src: "{{ playbook_dir }}/../{{ item }}"
             state: link
           loop: "{{ conf_files }}"
 
-        - name: Symlink ~/bin
+        - name: Symlink ~/bin on laptop
           file:
             path: ~/bin
             src: "{{ playbook_dir }}/../bin"
@@ -210,14 +209,20 @@
             state: started
             enabled: yes
 
+        - name: Add user to boinc group
+          user:
+            name: "{{ ansible_facts['user_id'] }}"
+            groups: boinc
+            append: yes
+
     - name: Attach to BAM
       shell: >-
         boinccmd
         --join_acct_mgr https://bam.boincstats.com/
-        {{ BAM_USERNAME }}
-        {{ BAM_PASSWORD }}
+        "{{ lookup('env', 'BAM_USERNAME') }}"
+        "{{ lookup('env', 'BAM_PASSWORD') }}"
       args:
         creates: /var/lib/boinc/acct_mgr_login.xml
-      when: >-
-        BAM_USERNAME is defined and 
-        BAM_PASSWORD is defined
+      when: >
+        lookup('env', 'BAM_USERNAME') | length > 0 and
+        lookup('env', 'BAM_PASSWORD') | length > 0
