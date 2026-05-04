@@ -10,3 +10,13 @@
     dest: ~/bin/
     src: "{{ playbook_dir }}/../bin/"
     delete: true
+
+- name: Ensure ~/.config/htop exists
+  file:
+    path: ~/.config/htop
+    state: directory
+
+- name: Copy htoprc
+  copy:
+    dest: ~/.config/htop/htoprc
+    src: ~/.config/htop/htoprc
