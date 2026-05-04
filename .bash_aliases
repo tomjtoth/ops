@@ -13,15 +13,8 @@ if [ -x /usr/bin/dircolors ]; then
 fi
 
 alias {é,ö}s="sudo -E -s"
-alias {é,ö}p='ping 1.1.1.1'
-
-alias {é,ö}sleep='f() {
-	[ -n "$1" ] && \
-		echo "going to suspend in $1" && \
-		sleep $1
-	systemctl -i suspend
-
-	unset -f f
+alias {é,ö}p='f() {
+	ping ${1:-1.1.1.1}
 }
 f'
 
