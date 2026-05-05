@@ -1,18 +1,18 @@
 ---
-- name: Set excludes for rsync
-  set_fact:
-    rsync_excludes: >-
-      {{
-        (['--exclude=boinc'] if 'boinc' not in group_names else []),
-        (['--exclude=laptops'] if 'laptops' not in group_names else [])
-      }}
-
 - name: Sync files in ~
   synchronize:
     dest: ~/{{ item }}
-    src: "{{ item }}"
+    src: "{{ role_path + '/files/' + item }}"
     delete: true
-    rsync_opts: "{{ rsync_excludes }}"
+    rsync_opts: >-
+      {{
+        [
+          '--exclude=boinc' if 'boinc' not in group_names else None,
+          '--exclude=laptops' if 'laptops' not in group_names else None
+        ]
+        | select
+        | list
+      }}
   loop: "{{ files_in_home }}"
 
 - name: Ensure ~/.config/htop exists
