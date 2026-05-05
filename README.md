@@ -2,9 +2,9 @@
 
 Scripts I use to automate management of my hosts.
 
-## Installing Arch
+## Kickstarting Arch & Alpine
 
-These steps are to be run as root on a fresh install, preferrably in chroot:
+These steps are to be run as root on a fresh install:
 
 ```sh
 curl -L ttj.hu/clonefig.sh -o clonefig.sh

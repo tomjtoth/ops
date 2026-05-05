@@ -1,0 +1,9 @@
+---
+default_locale: hu_HU.UTF-8
+
+utils:
+  - nano
+  - mc
+  - htop
+  - ncdu
+  - rsync

@@ -1,0 +1,12 @@
+alias boinctui='f(){
+	local cfg=/var/lib/boinc-client/gui_rpc_auth.cfg
+	
+	if [ -f $cfg ]; then
+		boinctui -b localhost -p "$(cat $cfg)"
+	else
+		boinctui
+	fi
+
+	unset -f f
+}
+f'

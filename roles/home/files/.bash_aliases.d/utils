@@ -1,0 +1,37 @@
+alias {é,ö}s="sudo -E -s"
+
+alias {é,ö}p='f() {
+	ping ${1:-1.1.1.1}
+}
+f'
+
+alias {é,ö}lz4='f() {
+	tar cf - "$1" | lz4 -z --best > "${1%%/}.tar.lz4"
+	unset -f f
+}
+f'
+
+alias {é,ö}xz='f() {
+	tar cf - "$1" | xz -z -9 > "${1%%/}.tar.xz"
+	unset -f f
+}
+f'
+
+alias {é,ö}tar='f() {
+	tar cf "${1%/}.tar""$1"
+	unset -f f
+}
+f'
+
+alias {é,ö}dconf='f() {
+	if [ "$1" == "load" ]; then
+		if [ -f $2 ]; then
+			dconf load / < "$2"
+		fi
+	else
+		dconf dump /
+	fi
+
+	unset -f f
+}
+f'

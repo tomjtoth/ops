@@ -1,0 +1,35 @@
+---
+- name: Ensure {{ sbin }} exists
+  file:
+    path: "{{ sbin }}"
+    state: directory
+    mode: "0755"
+
+- name: Copy script to {{ sbin }}
+  copy:
+    dest: "{{ sbin }}/firewall-ttj.sh"
+    src: firewall.sh
+    mode: "0700"
+  register: firewall
+
+- name: Copy OpenRC service
+  when: ansible_facts.service_mgr == "openrc"
+  copy:
+    dest: /etc/init.d/firewall-ttj
+    src: openrc.service
+    mode: "0755"
+  register: firewall_svc
+
+- name: Copy systemd service
+  when: ansible_facts.service_mgr == "systemd"
+  copy:
+    dest: /etc/systemd/system/firewall-ttj.service
+    src: systemd.service
+  register: firewall_svc
+
+- name: Enable & restart service
+  service:
+    enabled: true
+    state: restarted
+    name: firewall-ttj
+  when: firewall.changed or firewall_svc.changed

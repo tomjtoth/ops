@@ -1,0 +1,36 @@
+---
+- name: Set excludes for rsync
+  set_fact:
+    rsync_excludes: >-
+      {{
+        (['--exclude=boinc'] if 'boinc' not in group_names else []),
+        (['--exclude=laptops'] if 'laptops' not in group_names else [])
+      }}
+
+- name: Sync files in ~
+  synchronize:
+    dest: ~/{{ item }}
+    src: "{{ item }}"
+    delete: true
+    rsync_opts: "{{ rsync_excludes }}"
+  loop: "{{ files_in_home }}"
+
+- name: Ensure ~/.config/htop exists
+  file:
+    path: ~/.config/htop
+    state: directory
+
+- name: Copy htoprc
+  copy:
+    dest: ~/.config/htop/htoprc-ttj
+    src: ~/.config/htop/htoprc
+  register: htoprc
+
+- name: Adjust htoprc
+  when: htoprc.changed
+  shell: |
+    sed -re 's/(column_meters_0=AllCPUs)2/\1/' \
+      -re 's/(show_cpu_frequency)=1/\1=0/' \
+      -re 's/(show_cpu_temperature)=1/\1=0/' \
+      ~/.config/htop/htoprc-ttj > \
+      ~/.config/htop/htoprc

@@ -1,0 +1,64 @@
+# on Arch Linux
+if [ -f /usr/bin/pacman ]; then
+	if [ -f /usr/bin/pacaur ]; then
+		__AUR="pacaur"
+	elif [ -f /usr/bin/paru ]; then
+		__AUR="paru"
+	else
+		__AUR="pacman"
+	fi
+	# shellcheck disable=SC2016
+	__INSTALL='f() {
+		local now=$(date +%s)
+		local oldest=$(stat -c %Y /var/lib/pacman/sync/*.db | sort | tail -n 1)
+		local flag=-S
+
+		[ $(( (now - oldest) / 60 / 60 )) -ge 24 ] && flag=-Syy
+		'$__AUR' $flag $@
+
+		unset -f f
+	}
+	f'
+	__REMOVE="sudo pacman -Rscn"
+	__SEARCH="pacman -Ss"
+	__INFO="$__AUR -Si"
+	__LIST="pacman -Ql"
+	__UPDATE="$__AUR -Syyu --noconfirm && sudo paccache -k 0 -r"
+
+	alias {é,ö}u="sudo pacman -U --asdeps"
+	alias {éáű,öäå}="$__AUR -Ss"
+	alias {é,ö}fix="sudo pacman-key --refresh-keys"
+
+# on a debian derivative
+elif [ -f /usr/bin/apt ]; then
+	__INSTALL="sudo apt update && sudo apt install"
+	__REMOVE="sudo apt-get purge"
+	__SEARCH="apt search"
+	__INFO="apt show"
+	__LIST="dpkg-query -L"
+	__UPDATE="sudo apt autoremove && sudo apt update && sudo apt full-upgrade"
+
+# on Alpine
+elif [ -f /sbin/apk ]; then
+	__INSTALL="sudo apk add"
+	__REMOVE="sudo apk del"
+	__SEARCH="apk search"
+	__INFO="apk info"
+	__LIST="apk info -L"
+	__UPDATE="sudo apk update && sudo apk upgrade"
+fi
+
+alias {éá,öä}="$__SEARCH"
+alias {é,ö}i="$__INFO"
+alias {é,ö}l="$__LIST"
+alias {éé,öö}="$__INSTALL"
+alias {é,ö}r="$__REMOVE"
+
+alias {ééé,ööö}="$__UPDATE"
+
+alias {ééé,ööö}r="$__UPDATE && systemctl -i reboot"
+alias {ééé,ööö}p="$__UPDATE && systemctl -i poweroff"
+
+# cleanup after aliases are defined
+unset __AUR __UPDATE __SEARCH __INFO __LIST __INSTALL __REMOVE
+

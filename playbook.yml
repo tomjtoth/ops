@@ -1,0 +1,28 @@
+- name: Configure hosts (role-based)
+  hosts: all
+  become: true
+  roles:
+    - role: common
+      tags: [common]
+
+    - role: swap
+      tags: [swap]
+
+    - role: zram
+      tags: [zram]
+
+    - role: firewall
+      tags: [firewall]
+      when: "'servers' in group_names"
+
+    - role: home
+      tags: [home]
+      become: false
+
+    - role: boinc
+      tags: [boinc]
+      when: "'boinc' in group_names"
+
+    - role: k3s
+      tags: [k3s]
+      when: ansible_facts["distribution"] == "Alpine"

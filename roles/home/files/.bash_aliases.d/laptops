@@ -1,0 +1,55 @@
+alias {é,ö}ansible='f() {
+	local path=~/Projects/IT/ops
+
+	ansible-playbook -i "$path/hosts.ini" "$path/playbook.yml" $@
+
+	unset -f f
+}
+f'
+
+alias {é,ö}dconf='f() {
+	if [ "$1" == "load" ]; then
+		if [ -f $2 ]; then
+			dconf load / < "$2"
+		fi
+	else
+		dconf dump /
+	fi
+
+	unset -f f
+}
+f'
+
+alias {é,ö}yt='f() {
+	local mode=${2:-mp3}
+	local FLAGS=" -x --audio-format mp3"
+	if [ "$mode" == "best" ]; then
+		FLAGS="-f '"'"'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4'"'"'"
+	fi
+	yt-dlp $FLAGS $1
+	unset -f f
+}
+f'
+
+alias {é,ö}bump='f() {
+	# extract which one to bump
+	[[ "$1" =~ .*(major|minor|patch)$ ]]
+	local TRGT=${BASH_REMATCH[1]:-patch}
+
+	if [ -f Cargo.toml ]; then
+		cargo set-version --bump $TRGT
+	elif [ -f package.json ]; then
+		npm version \
+			--commit-hooks false \
+			--git-tag-version false \
+			$TRGT
+
+	else
+		echo "  ERROR: unsupported project"
+	fi
+	unset -f f
+}
+f'
+
+# Helsinging Yliopistolla
+alias {é,ö}hy-home="smbclient //home8.ad.helsinki.fi/t/tjtoth -U 'ATKK/tjtoth'"

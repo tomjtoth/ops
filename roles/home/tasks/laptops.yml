@@ -1,0 +1,22 @@
+---
+- name: Symlink files in ~
+  file:
+    path: "~/{{ item.rstrip('/') }}"
+    src: "{{ role_path + '/files/' + item.rstrip('/') }}"
+    state: link
+  loop: "{{ files_in_home }}"
+
+- name: Deploy user-level systemd services
+  file:
+    path: "~/.config/systemd/user/{{ item }}.service"
+    src: "{{ role_path }}/files/.config/systemd/user/{{ item }}.service"
+    state: link
+  loop: "{{ systemd_user_services }}"
+
+- name: Enable & start user-level systemd services
+  systemd:
+    name: "{{ item }}"
+    state: started
+    enabled: true
+    scope: user
+  loop: "{{ systemd_user_services }}"
