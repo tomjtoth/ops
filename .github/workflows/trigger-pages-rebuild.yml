@@ -3,7 +3,7 @@ name: Trigger Pages rebuild
 on:
   push:
     paths:
-      - bin/clonefig.sh
+      - roles/home/files/bin/clonefig.sh
 
 jobs:
   trigger:

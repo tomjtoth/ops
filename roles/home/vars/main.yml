@@ -1,0 +1,14 @@
+---
+files_in_home:
+  - bin/
+  - .bash_aliases.d/
+
+  - .profile
+  - .bash_profile
+  - .bashrc
+
+systemd_user_services:
+  - k3s-tunnel
+  - argocd
+  - longhorn
+  - socks5-tunnel

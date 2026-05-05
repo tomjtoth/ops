@@ -1,0 +1,8 @@
+---
+boinc_ubuntu:
+  - boinc-client
+  - boinctui
+
+boinc_arch:
+  - boinc-nox
+  - boinctui

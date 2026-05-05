@@ -1,0 +1,22 @@
+# systemctl
+if [ -f /usr/bin/systemctl ]; then
+	__SYS="sudo systemctl"
+	__SYS_RELOAD="sudo systemctl daemon-reload"
+	__USER="systemctl --user"
+	__USER_RELOAD="systemctl --user daemon-reload"
+
+# open-rc
+elif [ -f /sbin/rc-service ]; then
+	__SYS='echo TODO'
+	__SYS_RELOAD='echo TODO'
+	__USER='echo TODO'
+	__USER_RELOAD='echo TODO'
+fi
+
+alias {é,ö}ss="$__SYS"
+alias {é,ö}ssdr="$__SYS_RELOAD"
+alias {é,ö}su="$__USER"
+alias {é,ö}sudr="$__USER_RELOAD"
+
+# cleanup helper vars
+unset __SYS __SYS_RELOAD __USER __USER_RELOAD
