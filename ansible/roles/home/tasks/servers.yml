@@ -22,9 +22,11 @@
     src: ~/.config/htop/htoprc
   register: copied
 
-- name: Adjust AllCPUs widget
+- name: Adjust htoprc to VMs
   when: copied.changed
   shell: |
-    sed -r 's/(column_meters_0=AllCPUs)2/\1/' \
+    sed -re 's/(column_meters_0=AllCPUs)2/\1/' \
+      -re 's/(show_cpu_frequency)=1/\1=0/' \
+      -re 's/(show_cpu_temperature)=1/\1=0/' \
       ~/.config/htop/htoprc-ttj > \
       ~/.config/htop/htoprc
