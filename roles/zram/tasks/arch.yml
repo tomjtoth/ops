@@ -9,7 +9,6 @@
     dest: /etc/systemd/zram-generator.conf
     content: |
       [zram0]
-      zram-size = min(ram / 2, 8192)
   register: zram_service
 
 - name: Enable and start service
