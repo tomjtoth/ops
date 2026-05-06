@@ -1,0 +1,24 @@
+---
+- name: Mount / shared
+  copy:
+    dest: /etc/local.d/mount.start
+    mode: "0755"
+    content: |
+      #!/bin/sh
+      mount --make-rshared /
+
+- name: Enable local service
+  service:
+    name: local
+    enabled: true
+
+- name: Install open-iscsi
+  package:
+    name: open-iscsi
+    state: present
+
+- name: Enable & start open-iscsi
+  service:
+    name: iscsid
+    state: started
+    enabled: true

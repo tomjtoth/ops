@@ -25,4 +25,4 @@
 
     - role: k3s
       tags: [k3s]
-      when: ansible_facts["distribution"] == "Alpine"
+      when: "'k3s' in group_names"
