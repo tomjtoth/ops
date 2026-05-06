@@ -12,9 +12,11 @@
     name: local
     enabled: true
 
-- name: Install open-iscsi
+- name: Install open-iscsi & procps (vmstat)
   package:
-    name: open-iscsi
+    name:
+      - open-iscsi
+      - procps
     state: present
 
 - name: Enable & start open-iscsi
