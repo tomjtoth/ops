@@ -51,6 +51,7 @@ $BIN -D INPUT -j $OLD 2>/dev/null || true
 $BIN -F $OLD 2>/dev/null || true
 $BIN -X $OLD 2>/dev/null || true
 
-# enforce default DROP policies
-$BIN -S INPUT | grep -q '^-P INPUT DROP' || $BIN -P INPUT DROP
-$BIN -S FORWARD | grep -q '^-P FORWARD DROP' || $BIN -P FORWARD DROP
+# enforce default policies
+POLICY=${1:-ACCEPT}
+$BIN -S INPUT | grep -q "^-P INPUT $POLICY" || $BIN -P INPUT $POLICY
+$BIN -S FORWARD | grep -q "^-P FORWARD $POLICY" || $BIN -P FORWARD $POLICY
