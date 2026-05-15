@@ -1,4 +1,17 @@
 ---
+- name: Install open-iscsi & procps (vmstat)
+  package:
+    name:
+      - open-iscsi
+      - procps
+    state: present
+
+- name: Enable & start open-iscsi
+  service:
+    name: iscsid
+    state: started
+    enabled: true
+
 - name: Alpine agents
   include_tasks: alpine-agent.yml
   when: ansible_facts.distribution == "Alpine"
