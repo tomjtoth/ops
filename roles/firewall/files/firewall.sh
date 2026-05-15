@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # This script is to be run on boot + when rules change
 
@@ -23,10 +23,9 @@ $BIN -N $NEW 2>/dev/null || true
 $BIN -F $NEW
 
 ### start building NEW chain
+$BIN -A $NEW -m conntrack --ctstate INVALID -j DROP
 $BIN -A $NEW -i lo -j ACCEPT
 $BIN -A $NEW -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
-
-$BIN -A $NEW -m conntrack --ctstate INVALID -j DROP
 
 # SSH with brute-force protection
 $BIN -A $NEW -p tcp --dport 55522 -m conntrack --ctstate NEW \
