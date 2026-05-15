@@ -27,6 +27,13 @@
     src: systemd.service
   register: firewall_svc
 
+- name: Ensure DROP policy on main
+  when: "'laptops' in group_names"
+  lineinfile:
+    path: /etc/systemd/system/firewall-ttj.service
+    regexp: "^ExecStart="
+    line: ExecStart=/usr/local/sbin/firewall-ttj.sh DROP
+
 - name: Enable & restart service
   service:
     enabled: true
