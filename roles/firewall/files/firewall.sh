@@ -36,6 +36,9 @@ $BIN -A $NEW -p tcp --dport 55522 -m conntrack --ctstate NEW \
 $BIN -A $NEW -p tcp --dport 55522 -j ACCEPT
 
 
+$BIN -A $NEW -p tcp --dport 80 -j ACCEPT
+$BIN -A $NEW -p tcp --dport 443 -j ACCEPT
+
 
 # return control
 $BIN -A $NEW -j RETURN
