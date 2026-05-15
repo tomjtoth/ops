@@ -1,11 +1,7 @@
 ---
-- name: Archlinux only
-  include_tasks: arch.yml
-  when: ansible_facts['distribution'] == 'Archlinux'
-
-- name: Ubuntu only
-  include_tasks: ubuntu.yml
-  when: ansible_facts['distribution'] == 'Ubuntu'
+- name: Archlinux or Ubuntu only
+  include_tasks: arch_ubuntu.yml
+  when: ansible_facts['distribution'] in ['Archlinux','Ubuntu']
 
 - name: Alpine only
   include_tasks: alpine.yml

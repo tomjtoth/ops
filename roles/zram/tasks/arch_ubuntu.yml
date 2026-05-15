@@ -1,0 +1,21 @@
+---
+- name: Uninstall zram-tools
+  package:
+    name: zram-tools
+    state: absent
+
+- name: Install package
+  package:
+    name: >
+      {{
+        'zram-generator'
+        if ansible_facts.distribution == 'Archlinux' else
+        'systemd-zram-generator'
+      }}
+    state: present
+
+- name: Create service
+  copy:
+    dest: /etc/systemd/zram-generator.conf
+    content: |
+      [zram0]
