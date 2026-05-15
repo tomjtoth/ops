@@ -35,15 +35,7 @@ $BIN -A $NEW -p tcp --dport 55522 -m conntrack --ctstate NEW \
     -m recent --set --name DEFAULT --rsource
 $BIN -A $NEW -p tcp --dport 55522 -j ACCEPT
 
-# k3s within the cluster
-$BIN -A $NEW -s 10.0.0.0/16 -p tcp --dport 10250 -m conntrack --ctstate NEW -j ACCEPT
-$BIN -A $NEW -s 10.0.0.0/16 -p udp --dport 8472 -m conntrack --ctstate NEW -j ACCEPT
 
-# if this is a k3s server
-if  [ -f /etc/systemd/system/multi-user.target.wants/k3s.service ] || \
-    [ -f /etc/runlevels/default/k3s ]; then
-    $BIN -A $NEW -s 10.0.0.0/16 -p tcp --dport 6443 -m conntrack --ctstate NEW -j ACCEPT
-fi
 
 # return control
 $BIN -A $NEW -j RETURN
