@@ -1,8 +1,8 @@
 [Unit]
 Description=port forward for ArgoCD
-After=network-online.target k3s-tunnel.service
+After=network-online.target kube-tunnel.service
 Wants=network-online.target
-Requires=k3s-tunnel.service
+Requires=kube-tunnel.service
 
 [Service]
 Type=simple
