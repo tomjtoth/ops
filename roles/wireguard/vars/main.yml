@@ -1,3 +1,2 @@
 ---
-wg_subnet: 10.200.0
-wg_port: 51820
+wg_port: 55520

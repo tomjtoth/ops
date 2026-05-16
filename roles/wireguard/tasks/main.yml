@@ -1,7 +1,11 @@
 ---
 - name: Ensure wireguard is installed
   package:
-    name: wireguard
+    name: >-
+      {{
+      'wireguard' if ansible_facts.distribution == "Ubuntu"
+      else 'wireguard-tools'
+      }}
     state: present
 
 - name: Ensure wireguard directory exists
@@ -31,20 +35,23 @@
   delegate_to: localhost
   become: false
   changed_when: false
-  shell: ssh -G {{ inventory_hostname }} | awk '/^hostname / {print $2}'
+  shell: ssh -G {{ inventory_hostname }} | awk '$1 == "hostname" {print $2}'
   register: ssh_resolved
 
 - name: Set WireGuard facts
   set_fact:
     wg_private_key: "{{ privatekey_raw.content | b64decode | trim }}"
     wg_public_key: "{{ publickey_raw.stdout | trim }}"
-    wg_endpoint: "{{ ssh_resolved.stdout | trim }}"
-    wg_ip: "{{ wg_subnet }}.{{ groups['kube'].index(inventory_hostname) + 1 }}"
+    wg_endpoint: >-
+      {{
+        '' if inventory_hostname in groups['laptops']
+        else (ssh_resolved.stdout | trim)
+      }}
+    wg_ip: "{{ wg_ip }}"
 
 - name: Build peer list
   set_fact:
     wg_peers: []
-    wg_ip: "{{ wg_subnet }}.{{ groups['kube'].index(inventory_hostname) + 1 }}"
 
 - name: Populate peer list
   set_fact:
@@ -55,8 +62,8 @@
         'wg_public_key': hostvars[item].wg_public_key,
         'wg_endpoint': hostvars[item].wg_endpoint
       } ] }}
-  loop: "{{ groups['kube'] }}"
-  when: item != inventory_hostname
+  loop: "{{ groups['all'] }}"
+  when: item != inventory_hostname and hostvars[item].wg_ip is defined
 
 - name: Render wg0.conf
   template:

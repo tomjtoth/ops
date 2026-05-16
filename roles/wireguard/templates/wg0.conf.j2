@@ -1,12 +1,16 @@
 [Interface]
 Address = {{ wg_ip }}/24
+{% if wg_endpoint %}
 ListenPort = {{ wg_port }}
+{% endif %}
 PrivateKey = {{ wg_private_key }}
 
 {% for peer in wg_peers %}
 [Peer]
 PublicKey = {{ peer.wg_public_key }}
+{% if peer.wg_endpoint %}
 Endpoint = {{ peer.wg_endpoint }}:{{ wg_port }}
+{% endif %}
 AllowedIPs = {{ peer.wg_ip }}/32
 PersistentKeepalive = 25
 
