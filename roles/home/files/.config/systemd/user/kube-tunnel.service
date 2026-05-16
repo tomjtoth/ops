@@ -7,7 +7,7 @@ Wants=network-online.target
 Type=simple
 Restart=always
 RestartSec=10
-ExecStart=ssh -N -L 6443:127.0.0.1:6443 ora-amp-2
+ExecStart=ssh -N -L 6443:10.200.0.2:6443 aws-amd64
 
 [Install]
 WantedBy=default.target

@@ -8,7 +8,7 @@ files_in_home:
   - .bashrc
 
 systemd_user_services:
-  - k3s-tunnel
+  - kube-tunnel
   - argocd
   - longhorn
   - socks5-tunnel
