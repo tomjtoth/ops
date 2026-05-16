@@ -51,6 +51,5 @@ $BIN -F $OLD 2>/dev/null || true
 $BIN -X $OLD 2>/dev/null || true
 
 # enforce default policies
-POLICY=${1:-ACCEPT}
-$BIN -S INPUT | grep -q "^-P INPUT $POLICY" || $BIN -P INPUT $POLICY
-$BIN -S FORWARD | grep -q "^-P FORWARD $POLICY" || $BIN -P FORWARD $POLICY
+$BIN -S INPUT | grep -q "^-P INPUT ACCEPT" || $BIN -P INPUT ACCEPT
+$BIN -S FORWARD | grep -q "^-P FORWARD ACCEPT" || $BIN -P FORWARD ACCEPT
