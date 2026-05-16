@@ -22,6 +22,6 @@
       tags: [boinc]
       when: "'boinc' in group_names"
 
-    - role: k3s
-      tags: [k3s]
-      when: "'k3s' in group_names"
+    - role: kube
+      tags: [kube]
+      when: "'kube' in group_names"
