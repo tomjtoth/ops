@@ -1,5 +1,9 @@
 ---
-- name: Install open-iscsi & procps (vmstat)
+- name: Configure Wireguard
+  include_role:
+    name: wireguard
+
+- name: Install packages
   package:
     name:
       - open-iscsi

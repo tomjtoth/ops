@@ -1,0 +1,66 @@
+---
+- name: Ensure wireguard is installed
+  package:
+    name: wireguard
+    state: present
+
+- name: Ensure wireguard directory exists
+  file:
+    path: /etc/wireguard
+    state: directory
+    mode: "0700"
+
+- name: Generate private key if missing
+  shell: |
+    umask 077
+    test -f /etc/wireguard/privatekey || wg genkey > /etc/wireguard/privatekey
+  args:
+    creates: /etc/wireguard/privatekey
+
+- name: Read private key
+  slurp:
+    src: /etc/wireguard/privatekey
+  register: privatekey_raw
+
+- name: Derive public key
+  shell: cat /etc/wireguard/privatekey | wg pubkey
+  register: publickey_raw
+  changed_when: false
+
+- name: Resolve SSH endpoint (from local ssh config)
+  delegate_to: localhost
+  become: false
+  changed_when: false
+  shell: ssh -G {{ inventory_hostname }} | awk '/^hostname / {print $2}'
+  register: ssh_resolved
+
+- name: Set WireGuard facts
+  set_fact:
+    wg_private_key: "{{ privatekey_raw.content | b64decode | trim }}"
+    wg_public_key: "{{ publickey_raw.stdout | trim }}"
+    wg_endpoint: "{{ ssh_resolved.stdout | trim }}"
+    wg_ip: "{{ wg_subnet }}.{{ groups['kube'].index(inventory_hostname) + 1 }}"
+
+- name: Build peer list
+  set_fact:
+    wg_peers: []
+    wg_ip: "{{ wg_subnet }}.{{ groups['kube'].index(inventory_hostname) + 1 }}"
+
+- name: Populate peer list
+  set_fact:
+    wg_peers: >
+      {{ wg_peers + [ {
+        'name': item,
+        'wg_ip': hostvars[item].wg_ip,
+        'wg_public_key': hostvars[item].wg_public_key,
+        'wg_endpoint': hostvars[item].wg_endpoint
+      } ] }}
+  loop: "{{ groups['kube'] }}"
+  when: item != inventory_hostname
+
+- name: Render wg0.conf
+  template:
+    src: wg0.conf.j2
+    dest: /etc/wireguard/wg0.conf
+    mode: "0600"
+  notify: restart wireguard
