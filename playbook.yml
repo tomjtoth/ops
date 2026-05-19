@@ -13,6 +13,7 @@
 
     - role: firewall
       tags: [firewall]
+      when: "'servers' in group_names"
 
     - role: home
       tags: [home]
