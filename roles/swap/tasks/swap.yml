@@ -1,11 +1,7 @@
 ---
-- name: Determine swapfile size
-  set_fact:
-    swap_size: "{{ '1G' if ansible_facts['memtotal_mb'] > 1024 else '4G' }}"
-
 - name: Create, secure, and format swap file
   shell: |
-    fallocate -l {{ swap_size }} /swapfile &&
+    fallocate -l 1G /swapfile &&
     chmod 0600 /swapfile &&
     mkswap /swapfile
   args:
