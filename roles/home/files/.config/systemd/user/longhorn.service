@@ -1,8 +1,8 @@
 [Unit]
 Description=port forward for Longhorn
-After=network-online.target wg-quick@wg0.service
+After=network-online.target kube-tunnel.service
 Wants=network-online.target
-Requires=wg-quick@wg0.service
+Requires=kube-tunnel.service
 
 [Service]
 Type=simple
