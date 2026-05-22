@@ -1,0 +1,54 @@
+#!/bin/bash
+
+# this script gets called:
+# - on cold boot in all nodes (controllers + workers)
+# - by the NEW MASTER via SSH
+
+{% if vip_prio is defined %}
+
+# waiting for keepalived to bind to the interface on controllers
+sleep 5
+
+{% endif %}
+
+VIP_OWNERS=(
+{% for peer in wg_peers | sort(attribute='vip_prio', reverse = True) %}
+{% if (peer.vip_prio | int) > 0 and peer.wg_ip != wg_ip %}
+    {{ peer.wg_public_key }} {{ peer.wg_ip }}
+{% endif %}
+{% endfor %}
+)
+
+
+# failover called us
+if [ $# -eq 2 ]; then
+    NEXT_OWNER=($@)
+
+# on cold-boot
+else
+{% raw %}
+    for ((i = 0 ; i < "${#VIP_OWNERS[@]}" ; i+=2)); do
+{% endraw %}
+        if curl -ksm 1 https://${VIP_OWNERS[$((i+1))]}:6443/healthz -o /dev/null; then
+            NEXT_OWNER=(${VIP_OWNERS[i]} ${VIP_OWNERS[i+1]}/32)
+            break
+        fi
+    done
+fi
+
+
+# strip ownership from OLD MASTER
+read -r -a CURR_OWNER <<< "$(wg show wg0 allowed-ips | awk '$3 == "{{ wg_vip }}/32" {print $1, $2}')"
+if [ -n "$CURR_OWNER" ]; then
+    sudo wg set wg0 peer ${CURR_OWNER[0]} allowed-ips ${CURR_OWNER[1]}/32
+fi
+
+
+# a cold-booted MASTER exits here
+ip addr show wg0 | grep -q {{ wg_vip }} && exit 0
+
+
+# assign ownership to NEW MASTER if found
+if [ -v NEXT_OWNER ]; then
+    sudo wg set wg0 peer ${NEXT_OWNER[0]} allowed-ips ${NEXT_OWNER[1]},{{ wg_vip }}/32
+fi
