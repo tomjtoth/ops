@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# This Ansible-generated script is called by the newly elected MASTER
+
+PEER_ADDRESSES=(
+{% for peer in wg_peers %}
+{% if peer.wg_ip != wg_ip %}
+    {{ peer.wg_ip }}
+{% endif %}
+{% endfor %}
+)
+
+for ip in "${PEER_ADDRESSES[@]}"; do
+    ssh $ip "wg-vip-mapper.sh {{ wg_public_key }} {{ wg_ip }}/32" &
+done
+
+wait
