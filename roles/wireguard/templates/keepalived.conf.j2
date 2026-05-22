@@ -1,0 +1,44 @@
+global_defs {
+    enable_script_security
+    script_user wg_admin
+}
+
+vrrp_script check_k0s_api {
+    script "/usr/bin/curl -ksm 1 https://127.0.0.1:6443/healthz -o /dev/null"
+    interval 2
+    timeout 1
+    fall 2
+    rise 2
+    weight -50
+}
+
+vrrp_instance K0S_CONTROL_PLANE_HA {
+    state {{
+        'MASTER' if vip_prio == highest_prio
+        else 'BACKUP'
+    }}
+    interface wg0
+
+    virtual_ipaddress {
+        {{ wg_vip }}/32 dev wg0
+    }
+
+    virtual_router_id 51
+    priority {{ vip_prio }}
+    advert_int 1
+
+    unicast_src_ip {{ wg_ip }}
+    unicast_peer {
+{% for peer in wg_peers %}
+{% if (peer.vip_prio | int) > 0 and peer.wg_public_key != wg_public_key %}
+        {{ peer.wg_ip }}
+{% endif %}
+{% endfor %}
+    }
+
+    track_script {
+        check_k0s_api
+    }
+
+    notify_master /usr/local/sbin/wg-vip-failover.sh
+}
