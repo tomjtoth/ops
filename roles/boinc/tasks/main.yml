@@ -23,7 +23,6 @@
     append: yes
 
 - name: Attach to BAM
-  become: false
   shell: >-
     boinccmd
     --join_acct_mgr https://bam.boincstats.com/
