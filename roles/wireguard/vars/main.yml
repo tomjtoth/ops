@@ -1,4 +1,2 @@
 ---
 wg_port: 55520
-wg_vip: 10.200.0.250
-wg_user: wg_admin
