@@ -2,8 +2,12 @@
 - name: Install packages
   package:
     name:
+      # required by Longhorn
       - open-iscsi
+
+      # for the vmstat 1 command
       - procps
+      - yq
     state: present
 
 - name: Enable & start open-iscsi
