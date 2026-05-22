@@ -3,6 +3,7 @@
   package:
     name: "{{ utils }}"
     state: present
+    update_cache: true
 
 - name: Set locale
   copy:
