@@ -24,3 +24,17 @@
       LC_PAPER={{ default_locale }}
       LC_TELEPHONE={{ default_locale }}
       LC_TIME={{ default_locale }}
+
+- name: Ensure /etc/systemd/journald.conf.d/ exists
+  file:
+    path: /etc/systemd/journald.conf.d/
+    state: directory
+    mode: 0755
+
+- name: Limit max log size
+  copy:
+    dest: /etc/systemd/journald.conf.d/00-journal-size.conf
+    content: |
+      [Journal]
+      SystemMaxUse={{ '50M' if 'laptops' in group_names else '500M' }}
+  notify: Restart journald
