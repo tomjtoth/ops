@@ -14,25 +14,18 @@
     state: directory
     mode: "0700"
 
-- name: Generate private key if missing
+- name: Rotate private key
   shell: |
     umask 077
-    test -f /etc/wireguard/privatekey || wg genkey > /etc/wireguard/privatekey
-  args:
-    creates: /etc/wireguard/privatekey
-
-- name: Read private key
-  slurp:
-    src: /etc/wireguard/privatekey
+    wg genkey
   register: privatekey_raw
 
 - name: Derive public key
-  shell: cat /etc/wireguard/privatekey | wg pubkey
+  shell: echo "{{ privatekey_raw.stdout | trim }}" | wg pubkey
   register: publickey_raw
-  changed_when: false
 
 - name: Resolve SSH endpoint (from local ssh config)
-  delegate_to: localhost
+  delegate_to: main
   become: false
   changed_when: false
   shell: ssh -G {{ inventory_hostname }} | awk '$1 == "hostname" {print $2}'
@@ -40,7 +33,7 @@
 
 - name: Set WireGuard facts
   set_fact:
-    wg_private_key: "{{ privatekey_raw.content | b64decode | trim }}"
+    wg_private_key: "{{ privatekey_raw.stdout | trim }}"
     wg_public_key: "{{ publickey_raw.stdout | trim }}"
     wg_endpoint: >-
       {{
@@ -57,17 +50,58 @@
   set_fact:
     wg_peers: >
       {{ wg_peers + [ {
-        'name': item,
         'wg_ip': hostvars[item].wg_ip,
         'wg_public_key': hostvars[item].wg_public_key,
-        'wg_endpoint': hostvars[item].wg_endpoint
+        'wg_endpoint': hostvars[item].wg_endpoint,
+        'vip_prio': hostvars[item].get('vip_prio', 0 | int)
       } ] }}
   loop: "{{ groups['all'] }}"
   when: item != inventory_hostname and hostvars[item].wg_ip is defined
+
+- name: Compute highest priority
+  set_fact:
+    highest_prio: >-
+      {{
+        (
+          (wg_peers | map(attribute='vip_prio', default=0)) 
+          + [vip_prio if vip_prio is defined else 0]
+        )
+        | map('int')
+        | max
+      }}
 
 - name: Render wg0.conf
   template:
     src: wg0.conf.j2
     dest: /etc/wireguard/wg0.conf
     mode: "0600"
-  notify: restart wireguard
+  notify: "{{ ['restart wireguard'] + (['restart keepalived'] if vip_prio is defined else []) }}"
+
+- name: Render wg-vip-mapper.sh
+  template:
+    src: wg-vip-mapper.sh.j2
+    dest: /usr/local/sbin/wg-vip-mapper.sh
+    mode: "0755"
+
+- name: Add Apparmor exception ot Ubuntu 26.04
+  when: >
+    ansible_facts.distribution == "Ubuntu" 
+    and ansible_facts.distribution_version == "26.04"
+  block:
+    - name: Allow wg-vip-mapper.sh to run unconfined via AppArmor
+      ansible.builtin.copy:
+        dest: /etc/apparmor.d/local/wg-quick
+        mode: "0644"
+        content: |
+          # Allow WireGuard VIP mapper helper to run unconfined
+          file mrUx /usr/local/sbin/wg-vip-mapper.sh,
+      notify:
+        - reload apparmor wg-quick
+
+    - shell: |
+        apparmor_parser -r /etc/apparmor.d/wg-quick
+
+- include_tasks: "keepalived.yml"
+  when: vip_prio is defined
+
+- include_tasks: "ssh.yml"
