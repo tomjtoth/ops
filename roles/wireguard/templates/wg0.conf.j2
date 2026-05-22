@@ -5,6 +5,7 @@ ListenPort = {{ wg_port }}
 {% endif %}
 PrivateKey = {{ wg_private_key }}
 MTU = 1420
+PostUp = wg-vip-mapper.sh
 
 {% for peer in wg_peers %}
 [Peer]
