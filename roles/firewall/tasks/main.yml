@@ -1,35 +1,25 @@
 ---
-- name: Ensure {{ sbin }} exists
+- name: Ensure {{ nftd }} exists
   file:
-    path: "{{ sbin }}"
+    path: "{{ nftd }}"
     state: directory
     mode: "0755"
 
-- name: Copy script to {{ sbin }}
-  copy:
-    dest: "{{ sbin }}/firewall-ttj.sh"
-    src: firewall.sh
-    mode: "0700"
-  register: firewall
+- name: Render rules to {{ nftd }}
+  template:
+    src: ruleset.nft.j2
+    dest: "{{ nftd }}/100-ttj.nft"
+    mode: "0644"
+  register: rules
 
-- name: Copy OpenRC service
-  when: ansible_facts.service_mgr == "openrc"
-  copy:
-    dest: /etc/init.d/firewall-ttj
-    src: openrc.service
-    mode: "0755"
-  register: firewall_svc
+- name: Ensure drop-in snippets are parsed
+  lineinfile:
+    path: >-
+      /etc/nftables.{{
+        'nft' if ansible_facts.distribution == "Alpine" else 'conf'
+      }}
+    line: include "{{ nftd }}/*.nft"
 
-- name: Copy systemd service
-  when: ansible_facts.service_mgr == "systemd"
-  copy:
-    dest: /etc/systemd/system/firewall-ttj.service
-    src: systemd.service
-  register: firewall_svc
-
-- name: Enable & restart service
-  service:
-    enabled: true
-    state: restarted
-    name: firewall-ttj
-  when: firewall.changed or firewall_svc.changed
+- name: Reload ruleset
+  ansible.builtin.command: nft -f "{{ nftd }}/100-ttj.nft"
+  when: rules.changed

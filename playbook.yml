@@ -11,10 +11,6 @@
     - role: zram
       tags: [zram]
 
-    - role: firewall
-      tags: [firewall]
-      when: "'servers' in group_names"
-
     - role: home
       tags: [home]
       become: false
@@ -26,6 +22,9 @@
     - role: wireguard
       tags: [wireguard]
       when: wg_ip is defined
+
+    - role: firewall
+      tags: [firewall]
 
     - role: kube
       tags: [kube]

@@ -1,2 +1,2 @@
 ---
-sbin: /usr/local/sbin
+nftd: /etc/nftables.d
