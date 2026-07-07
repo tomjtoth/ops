@@ -1,0 +1,6 @@
+[Unit]
+Description=Sync kube-data from Azure with rclone
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/rclone sync gcs-drukbu:/drukbu %h/Projects/IT/kube/cloud-provider-backups/
