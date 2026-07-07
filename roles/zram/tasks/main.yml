@@ -5,4 +5,6 @@
 
 - name: Alpine only
   include_tasks: alpine.yml
-  when: ansible_facts['distribution'] == 'Alpine'
+  when: >
+    ansible_facts['distribution'] == 'Alpine'
+    and pmOS is not defined
