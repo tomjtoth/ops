@@ -7,7 +7,7 @@ Wants=network-online.target
 Type=simple
 Restart=always
 RestartSec=10
-ExecStart=ssh -N -L 6443:127.0.0.1:6443 azu-1
+ExecStart=ssh -N -L 6443:127.0.0.1:6443 gcp-1
 
 [Install]
 WantedBy=default.target
