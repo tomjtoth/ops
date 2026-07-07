@@ -62,4 +62,6 @@
     src: wg0.conf.j2
     dest: /etc/wireguard/wg0.conf
     mode: "0600"
-  notify: restart wireguard
+  notify:
+    - reload wireguard daemon
+    - restart wireguard
