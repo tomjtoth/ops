@@ -1,15 +1,20 @@
+{% set local_host = wg_endpoint.endswith('.local') %}
 [Interface]
 Address = {{ wg_ip }}/24
-{% if wg_endpoint %}
+{% if wg_endpoint and not local_host %}
 ListenPort = {{ wg_port }}
 {% endif %}
 PrivateKey = {{ wg_private_key }}
 MTU = 1420
 
 {% for peer in wg_peers %}
+{% set local_peer = peer.wg_endpoint.endswith('.local') %}
 [Peer]
 PublicKey = {{ peer.wg_public_key }}
-{% if peer.wg_endpoint %}
+{% if peer.wg_endpoint and (
+    not local_peer
+    or local_peer and local_host 
+) %}
 Endpoint = {{ peer.wg_endpoint }}:{{ wg_port }}
 {% endif %}
 AllowedIPs = {{ peer.wg_ip }}/32
