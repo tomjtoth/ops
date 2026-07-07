@@ -1,12 +1,7 @@
 ---
-- name: Uninstall zram-tools
-  package:
-    name: zram-tools
-    state: absent
-
 - name: Install package
   package:
-    name: >
+    name: >-
       {{
         'zram-generator'
         if ansible_facts.distribution == 'Archlinux' else
