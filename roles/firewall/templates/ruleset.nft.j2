@@ -7,15 +7,14 @@ table inet filter {
         tcp dport 55522 drop comment "Deny SSH"
 {% if wg_ip is defined %}
 {% if not wg_endpoint.endswith('.local') %}
+
         tcp dport {80,443} accept comment "Allow HTTP / HTTPS"
 {% endif %}
 
         udp dport 55520 accept comment "Allow Wireguard"
 {% endif %}
 
-{% if wg_endpoint.endswith('.local') %}
         ip daddr 224.0.0.251 udp dport 5353 accept comment "Allow mDNS / Avahi"
         ip6 daddr ff02::fb udp dport 5353 accept comment "Allow mDNS / Avahi"
-{% endif %}
     }
 }
