@@ -2,6 +2,10 @@
   hosts: all
   become: true
   roles:
+    - role: postmarketOS
+      tags: [postmarketOS, pmOS]
+      when: pmOS is defined
+
     - role: common
       tags: [common]
 
