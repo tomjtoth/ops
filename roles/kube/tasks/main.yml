@@ -1,13 +1,15 @@
 ---
 - name: Install packages
   package:
-    name:
-      # required by Longhorn
-      - open-iscsi
-
-      # for the vmstat 1 command
-      - procps
-      - yq
+    name: >-
+      {{ 
+        ['open-iscsi', 'procps'] + 
+        (
+          ['open-iscsi-openrc', 'gcompat', 'yq-python'] 
+          if ansible_facts.distribution == 'Alpine' else 
+          ['yq']
+        )
+      }}
     state: present
 
 - name: Enable & start open-iscsi
