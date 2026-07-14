@@ -1,0 +1,11 @@
+---
+- name: install openrc scripts
+  package:
+    name: wireguard-tools-openrc
+    state: present
+
+- name: init wg0
+  file:
+    path: /etc/init.d/wg-quick.wg0
+    src: /etc/init.d/wg-quick
+    state: link
