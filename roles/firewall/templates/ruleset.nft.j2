@@ -12,9 +12,16 @@ table inet filter {
 {% endif %}
 
         udp dport 55520 accept comment "Allow Wireguard"
+        iifname wg0 accept comment "Allow wg0"
 {% endif %}
 
         ip daddr 224.0.0.251 udp dport 5353 accept comment "Allow mDNS / Avahi"
         ip6 daddr ff02::fb udp dport 5353 accept comment "Allow mDNS / Avahi"
     }
+{% if wg_ip is defined %}
+
+    chain forward {
+        iifname wg0 accept comment "Accept forwarding from wg0"
+    }
+{% endif %}
 }
