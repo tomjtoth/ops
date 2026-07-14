@@ -11,3 +11,7 @@
   service:
     name: local
     enabled: true
+
+- name: enable zram mounts for k0s
+  include_tasks: k0s-zram.yml
+  when: pmOS is defined

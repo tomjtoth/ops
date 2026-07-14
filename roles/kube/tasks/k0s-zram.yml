@@ -1,0 +1,17 @@
+---
+- name: Copy script
+  copy:
+    dest: /usr/local/bin
+    src: k0s-zram.sh
+    mode: "0755"
+
+- name: Copy service
+  copy:
+    dest: /etc/init.d/
+    src: k0s-zram
+    mode: "0755"
+
+- name: Enable service
+  service:
+    name: k0s-zram
+    enabled: true
