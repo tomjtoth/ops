@@ -6,6 +6,10 @@
 
 - name: restart wireguard
   service:
-    name: wg-quick@wg0
+    name: >-
+      {{
+      'wg-quick.wg0' if ansible_facts.distribution == 'Alpine'
+      else 'wg-quick@wg0'
+      }}
     enabled: true
     state: restarted

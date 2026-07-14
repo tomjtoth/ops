@@ -65,3 +65,7 @@
   notify:
     - reload wireguard daemon
     - restart wireguard
+
+- name: on Alpine
+  include_tasks: alpine.yml
+  when: ansible_facts.distribution == 'Alpine'
