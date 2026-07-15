@@ -1,6 +1,6 @@
 ---
 files_in_home:
-  - bin/
+  - .local/bin/
   - .bash_aliases.d/
 
   - .profile
