@@ -13,15 +13,36 @@ table inet filter {
 
         udp dport 55520 accept comment "Allow Wireguard"
         iifname wg0 accept comment "Allow wg0"
+
+        ip daddr { 10.244.0.0/16, 10.96.0.0/12 } accept \
+            comment "Allow traffic to k0s podCIDR, serviceCIDR"
+
+        ip saddr { 10.244.0.0/16, 10.96.0.0/12 } accept \
+            comment "Allow traffic from k0s podCIDR, serviceCIDR"
 {% endif %}
 
         ip daddr 224.0.0.251 udp dport 5353 accept comment "Allow mDNS / Avahi"
         ip6 daddr ff02::fb udp dport 5353 accept comment "Allow mDNS / Avahi"
+
+{% if debug_nft is defined %}
+        log prefix "NFT INPUT DROP: " flags all
+{% endif %}
     }
 {% if wg_ip is defined %}
 
     chain forward {
-        iifname wg0 accept comment "Accept forwarding from wg0"
+        iifname wg0 accept comment "Allow traffic from wg0"
+        oifname wg0 accept comment "Allow traffic to wg0"
+
+        ip daddr { 10.244.0.0/16, 10.96.0.0/12 } accept \
+            comment "Allow traffic to k0s podCIDR, serviceCIDR"
+
+        ip saddr { 10.244.0.0/16, 10.96.0.0/12 } accept \
+            comment "Allow traffic from k0s podCIDR, serviceCIDR"
+{% if debug_nft is defined %}
+
+        log prefix "NFT FORWARD DROP: " flags all
+{% endif %}
     }
 {% endif %}
 }
