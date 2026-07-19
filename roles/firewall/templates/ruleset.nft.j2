@@ -34,6 +34,9 @@ table inet filter {
         iifname wg0 accept comment "Allow traffic from wg0"
         oifname wg0 accept comment "Allow traffic to wg0"
 
+        iifname "docker*" accept comment "Allow traffic from Docker"
+        oifname "docker*" accept comment "Allow traffic to Docker"
+
         ip daddr { 10.244.0.0/16, 10.96.0.0/12 } accept \
             comment "Allow traffic to k0s podCIDR, serviceCIDR"
 
