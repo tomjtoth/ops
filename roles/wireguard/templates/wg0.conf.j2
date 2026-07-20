@@ -5,7 +5,7 @@ Address = {{ wg_ip }}/24
 ListenPort = {{ wg_port }}
 {% endif %}
 PrivateKey = {{ wg_private_key }}
-MTU = 1420
+MTU = 1392
 
 {% for peer in wg_peers %}
 {% set local_peer = peer.wg_endpoint.endswith('.local') %}
