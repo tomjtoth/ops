@@ -29,9 +29,10 @@ SYSTEMD_SERVICE
 DOCKER_IT="-it"
 
 __run(){
-    [ "${DEBUG:-false}" = true ] && set -x
+    [ -v DEBUG ] && set -x
     docker run --rm $DOCKER_IT -v "$PERSISTENT_OCI:/oracle/.oci" ghcr.io/oracle/oci-cli "$@"
-    [ "${DEBUG:-false}" = true ] && { set +x; } 2>/dev/null
+    RC=$?
+    [ -v DEBUG ] && { set +x; } 2>/dev/null
 }
 
 __list_all(){
@@ -44,7 +45,7 @@ DISPLAY_NAME=MaxedOutAlwaysFreeVM
 SHAPE=VM.Standard.A1.Flex
 SHAPE_CONFIG='{"ocpus":1,"memoryInGBs":1}'
 BOOT_VOLUME_SIZE_IN_GBS=50
-RETRY_TIMEOUT=10m
+RETRY_TIMEOUT=90s
 
 USAGE=$(cat <<EOF
 
@@ -58,6 +59,7 @@ where OVERRIDES for --launch with their defaults:
   
   --retry-timeout               $RETRY_TIMEOUT
 
+
 EOF
 )
 
@@ -66,6 +68,11 @@ __parse_overrides(){
         case "$1" in
             --as-service)
                 DOCKER_IT=""
+                ;;
+
+            --retry-timeout)
+                RETRY_TIMEOUT=$2
+                shift
                 ;;
 
             --display-name) 
@@ -145,7 +152,7 @@ __launch(){
             --metadata "$METADATA" \
             --boot-volume-size-in-gbs $BOOT_VOLUME_SIZE_IN_GBS
 
-        [ $? -eq 0 ] && break
+        [ $RC -eq 0 ] && break
         
         echo -e "\n\tretrying in $RETRY_TIMEOUT...\n"
         sleep $RETRY_TIMEOUT
