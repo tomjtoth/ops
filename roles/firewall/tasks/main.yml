@@ -6,9 +6,9 @@
 
 - name: Copy base ruleset
   copy:
-    path: >-
+    dest: >-
       /etc/nftables.{{
-        'nft' if ansible_distribution == 'Alpine' else 'conf'
+        'nft' if ansible_facts.distribution == 'Alpine' else 'conf'
       }}
     src: base.nft
   register: base
@@ -34,9 +34,31 @@
       }}
     line: include "{{ nftd }}/*.nft"
 
-- name: Reload ruleset
+- name: Reload nft ruleset
   when: base.changed or rules.changed
   ansible.builtin.service:
     name: nftables
     enabled: true
-    status: restarted
+    state: restarted
+
+- name: Gather service facts
+  ansible.builtin.service_facts:
+
+- name: Restart services if they exist
+  ansible.builtin.service:
+    name: "{{ item }}"
+    enabled: true
+    state: restarted
+  loop:
+    - k0scontroller
+    - docker
+  when:
+    - base.changed or rules.changed
+    - item + '.service' in ansible_facts.services
+
+- name: Stop iptables
+  when: "'iptables.service' in ansible_facts.services"
+  ansible.builtin.service:
+    name: iptables
+    enabled: false
+    state: stopped
