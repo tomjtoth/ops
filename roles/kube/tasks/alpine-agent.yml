@@ -12,6 +12,6 @@
     name: local
     enabled: true
 
-- name: enable zram mounts for k0s
-  include_tasks: k0s-zram.yml
+- name: Enable zram-dirs
+  include_tasks: zram-dirs.yml
   when: pmOS is defined
