@@ -7,23 +7,21 @@ move_mnt(){
     umount "$1"
 }
 
+TMP=$(mktemp -d)
+MNT=$(realpath "$1")
 
-TMP=/tmp/zram-dir
-[ ! -d $TMP ] && mkdir -p $TMP
-
-
-if ! mountpoint -q "$1"; then
-    [ ! -d "$1" ] && exit 1
+if ! mountpoint -q "$MNT"; then
+    [ ! -d "$MNT" ] && exit 1
 
     DEV=$(zramctl -f -s $2)
     mkfs.ext4 -q $DEV
     mount $DEV $TMP
 
-    rsync -a "$1/" $TMP/
-    move_mnt $TMP "$1"
+    rsync -a "$MNT/" $TMP/
+    move_mnt $TMP "$MNT"
 else
-    move_mnt "$1" $TMP
-    rsync -a --exclude='lost+found' --delete-after $TMP/ "$1/"
+    move_mnt "$MNT" $TMP
+    rsync -a --exclude='lost+found' --delete-after $TMP/ "$MNT/"
 
     DEV=$(awk -v tmp="$TMP" '$2 == tmp {print $1}' /proc/mounts)
     umount $TMP
