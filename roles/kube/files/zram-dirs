@@ -2,12 +2,13 @@
 
 depend() {
     need localmount
-    before k0scontroller logger 
+    before logger metalog syslog syslog-ng busybox-syslog \
+        k0scontroller cron dbus
 }
 
 start() {
     ebegin "Mounting dirs to zram"
-    /usr/local/bin/zram-dir /var/lib/k0s/etcd 512M
+    /usr/local/bin/zram-dir /var/lib/k0s/etcd 1G
     /usr/local/bin/zram-dir /var/log 512M
     eend $?
 }
