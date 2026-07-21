@@ -1,0 +1,31 @@
+#!/bin/bash
+
+set -Eeu
+
+move_mnt(){
+    mount --bind "$1" "$2"
+    umount "$1"
+}
+
+
+TMP=/tmp/zram-dir
+[ ! -d $TMP ] && mkdir -p $TMP
+
+
+if ! mountpoint -q "$1"; then
+    [ ! -d "$1" ] && exit 1
+
+    DEV=$(zramctl -f -s $2)
+    mkfs.ext4 -q $DEV
+    mount $DEV $TMP
+
+    rsync -a "$1/" $TMP/
+    move_mnt $TMP "$1"
+else
+    move_mnt "$1" $TMP
+    rsync -a --exclude='lost+found' --delete-after $TMP/ "$1/"
+
+    DEV=$(awk -v tmp="$TMP" '$2 == tmp {print $1}' /proc/mounts)
+    umount $TMP
+    zramctl -r $DEV
+fi
