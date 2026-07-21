@@ -11,9 +11,7 @@
 
     - role: swap
       tags: [swap]
-
-    - role: zram
-      tags: [zram]
+      when: pmOS is not defined
 
     - role: home
       tags: [home]
