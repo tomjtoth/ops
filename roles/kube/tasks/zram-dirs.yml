@@ -7,11 +7,13 @@
 
 - name: Copy service
   copy:
-    dest: /etc/init.d/
-    src: zram-dirs
+    dest: /etc/init.d/zram-dir
+    src: zram-dir.service
     mode: "0755"
 
-- name: Enable service
-  service:
-    name: zram-dirs
-    enabled: true
+- name: Create links to service
+  file:
+    path: /etc/init.d/zram-dir.{{ item.path | replace('/', '%2F') }}.{{ item.size }}
+    src: /etc/init.d/zram-dir
+    state: link
+  loop: "{{ zram_dirs }}"
