@@ -15,7 +15,7 @@ if ! mountpoint -q "$MNT"; then
 
     DEV=$(zramctl -f -s $2)
     mkfs.ext4 -q $DEV
-    mount $DEV $TMP
+    mount -o defaults,discard $DEV $TMP
 
     rsync -a "$MNT/" $TMP/
     move_mnt $TMP "$MNT"
