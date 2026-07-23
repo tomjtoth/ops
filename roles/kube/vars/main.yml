@@ -1,0 +1,6 @@
+---
+zram_dirs:
+  - path: /var/log
+    size: 512M
+  - path: /var/lib/k0s/etcd
+    size: 1G

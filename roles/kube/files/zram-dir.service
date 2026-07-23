@@ -1,0 +1,40 @@
+#!/sbin/openrc-run
+
+depend() {
+	need localmount
+	before logbookd logger metalog syslog syslog-ng busybox-syslog \
+		k0scontroller cron dbus
+}
+
+CONF="${SVCNAME#*.}"
+SIZE="${CONF##*.}"
+DIR="${CONF%.*}"
+DIR="${DIR//%2F//}"
+
+checkconfig() {
+	if [ "$CONF" = "$SVCNAME" ]; then
+		eerror "You cannot call this init script directly. You must create a symbolic link to it with the configuration name:"
+		eerror "    ln -s /etc/init.d/zram-dir /etc/init.d/zram-dir.%2Fvar%2Flog.512M"
+		eerror "And then call it instead:"
+		eerror "    /etc/init.d/zram-dir.%2Fvar%2Flog.512M start"
+		return 1
+	fi
+	return 0
+}
+
+start() {
+	checkconfig || return 1
+
+	ebegin "Mounting $DIR ($SIZE) to zram"
+	/usr/local/bin/zram-dir $DIR $SIZE
+	eend $? "Failed to mount $DIR"
+}
+
+stop() {
+	checkconfig || return 1
+
+	ebegin "Unmounting $DIR from zram"
+	/usr/local/bin/zram-dir "$DIR"
+	eend $? "Failed to unmount $DIR"
+}
+
