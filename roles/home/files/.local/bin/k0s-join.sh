@@ -40,11 +40,12 @@ case "$1" in
             .spec.storage.etcd.peerAddress = $nodeIp |
             .spec.network.provider = "calico" |
             .spec.network.calico.mode = "bird" |
-            .spec.network.calico.mtu = 1420 |
+            .spec.network.calico.mtu = 1352 |
+            .spec.network.calico.ipAutodetectionMethod = "interface=wg0" |
             .spec.network.nodeLocalLoadBalancing.enabled = true |
-            .spec.telemetry.enabled = true |
-            .spec.storage.etcd.extraArgs."heartbeat-interval" = "500" |
-            .spec.storage.etcd.extraArgs."election-timeout" = "5000"
+            .spec.storage.etcd.extraArgs."max-wals" = "2" |
+            .spec.storage.etcd.extraArgs."auto-compaction-retention" = "72" |
+            .spec.telemetry.enabled = true
             ' /etc/k0s/k0s.yaml
 
         join_flags+=(
