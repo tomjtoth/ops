@@ -37,14 +37,10 @@ case "$1" in
             --arg nodeIp $node_ip \
             '
             .spec.api.address = $nodeIp |
-            .spec.storage.etcd.peerAddress = $nodeIp |
-            .spec.network.provider = "calico" |
-            .spec.network.calico.mode = "bird" |
-            .spec.network.calico.mtu = 1352 |
-            .spec.network.calico.ipAutodetectionMethod = "interface=wg0" |
             .spec.network.nodeLocalLoadBalancing.enabled = true |
             .spec.storage.etcd.extraArgs."max-wals" = "2" |
             .spec.storage.etcd.extraArgs."auto-compaction-retention" = "72" |
+            .spec.storage.etcd.peerAddress = $nodeIp |
             .spec.telemetry.enabled = true
             ' /etc/k0s/k0s.yaml
 
