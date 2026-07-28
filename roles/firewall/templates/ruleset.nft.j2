@@ -36,6 +36,9 @@ table inet filter {
 
         iifname "docker*" accept comment "Allow traffic from Docker"
         oifname "docker*" accept comment "Allow traffic to Docker"
+        
+        iifname "kube-bridge" accept comment "Allow traffic from kube-router"
+        oifname "kube-bridge" accept comment "Allow traffic to kube-router"
 
         ip daddr { 10.244.0.0/16, 10.96.0.0/12 } accept \
             comment "Allow traffic to k0s podCIDR, serviceCIDR"
