@@ -51,6 +51,7 @@
     state: restarted
   loop:
     - k0scontroller
+    - k0sworker
     - docker
   when:
     - base.changed or rules.changed
