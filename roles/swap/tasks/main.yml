@@ -1,6 +1,8 @@
 ---
 - name: /etc/swapfile
   include_tasks: swapfile.yml
+  when:
+    - ansible_facts.swaptotal_mb == 0
 
 - name: systemd-zram-generator
   include_tasks: systemd-zram-generator.yml
@@ -8,8 +10,9 @@
     - ansible_facts.service_mgr == "systemd"
     - ansible_facts.distribution in ["Ubuntu", "Archlinux"]
 
-- name: zarm-init
+- name: zram-init
   include_tasks: zram-init.yml
   when:
     - ansible_facts.service_mgr == "openrc"
     - ansible_facts.distribution == "Alpine"
+    - ansible_facts.memtotal_mb > 1024
