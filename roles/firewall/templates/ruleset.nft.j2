@@ -1,10 +1,10 @@
 table inet filter {
     chain input {
-        tcp dport 55522 ct state new meter ssh { \
+        tcp dport { 22, 55522 } ct state new meter ssh { \
             ip saddr limit rate 10/minute \
         } accept comment "Allow SSH for non-brute-force attempts"
 
-        tcp dport 55522 drop comment "Deny SSH"
+        tcp dport { 22, 55522 } drop comment "Deny SSH"
 {% if wg_ip is defined %}
 {% if not wg_endpoint.endswith('.local') %}
 
