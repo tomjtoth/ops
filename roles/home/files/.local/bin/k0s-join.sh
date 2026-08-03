@@ -40,6 +40,8 @@ case "$1" in
             .spec.network.nodeLocalLoadBalancing.enabled = true |
             .spec.network.kuberouter.autoMTU = false |
             .spec.network.kuberouter.mtu = 1372 |
+            .spec.network.kuberouter.extraArgs."enable-overlay" = "true" |
+            .spec.network.kuberouter.extraArgs."overlay-type" = "full" |
             .spec.storage.etcd.extraArgs."max-wals" = "2" |
             .spec.storage.etcd.extraArgs."auto-compaction-retention" = "72" |
             .spec.storage.etcd.peerAddress = $nodeIp |
