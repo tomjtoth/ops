@@ -38,6 +38,8 @@ case "$1" in
             '
             .spec.api.address = $nodeIp |
             .spec.network.nodeLocalLoadBalancing.enabled = true |
+            .spec.network.kuberouter.autoMTU = false |
+            .spec.network.kuberouter.mtu = 1372 |
             .spec.storage.etcd.extraArgs."max-wals" = "2" |
             .spec.storage.etcd.extraArgs."auto-compaction-retention" = "72" |
             .spec.storage.etcd.peerAddress = $nodeIp |
