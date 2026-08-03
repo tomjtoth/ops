@@ -23,6 +23,7 @@ table inet filter {
 
         ip daddr 224.0.0.251 udp dport 5353 accept comment "Allow mDNS / Avahi"
         ip6 daddr ff02::fb udp dport 5353 accept comment "Allow mDNS / Avahi"
+        ip protocol igmp accept comment "Allow IGMP multicast membership"
 
 {% if debug_nft is defined %}
         log prefix "NFT INPUT DROP: " flags all
