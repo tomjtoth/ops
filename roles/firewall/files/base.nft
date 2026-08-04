@@ -54,6 +54,7 @@ table inet filter {
         } ip6 saddr fe80::/10 accept \
         comment "Allow IPv6 multicast listener discovery on link-local"
 
+        udp sport 67 udp dport 68 accept comment "Accept DHCP"
         ip6 saddr fe80::/10 udp sport 547 udp dport 546 accept \
         comment "Accept DHCPv6 replies from IPv6 link-local addresses"
     }
