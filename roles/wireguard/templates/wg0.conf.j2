@@ -1,9 +1,7 @@
 {% set local_host = wg_endpoint.endswith('.local') %}
 [Interface]
 Address = {{ wg_ip }}/24
-{% if wg_endpoint and not local_host %}
 ListenPort = {{ wg_port }}
-{% endif %}
 PrivateKey = {{ wg_private_key }}
 MTU = 1392
 
