@@ -1,21 +1,29 @@
-{% set local_host = wg_endpoint.endswith('.local') %}
 [Interface]
 Address = {{ wg_ip }}/24
 ListenPort = {{ wg_port }}
 PrivateKey = {{ wg_private_key }}
 MTU = 1392
+{% if wg_proxies | length > 0 %}
+PreUp = sysctl -w net.ipv4.ip_forward=1
+{% endif %}
 
-{% for peer in wg_peers %}
-{% set local_peer = peer.wg_endpoint.endswith('.local') %}
+{% for peer in wg_peers.values() %}
+{# 2 roaming clients should not reach each other directly #}
+{% if not (wg_roaming and peer.wg_roaming) %}
 [Peer]
 PublicKey = {{ peer.wg_public_key }}
-{% if peer.wg_endpoint and (
-    not local_peer
-    or local_peer and local_host 
-) %}
+{% if not peer.wg_roaming %}
 Endpoint = {{ peer.wg_endpoint }}:{{ wg_port }}
 {% endif %}
 AllowedIPs = {{ peer.wg_ip }}/32
+{%- if wg_roaming -%}
+    {%- for proxied in peer.wg_proxies -%}
+        {%- if proxied != inventory_hostname -%}
+            , {{ wg_peers[proxied].wg_ip }}/32
+        {%- endif -%}
+    {%- endfor -%}
+{%- endif +%}
 PersistentKeepalive = 25
 
+{% endif %}
 {% endfor %}

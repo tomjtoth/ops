@@ -23,7 +23,7 @@
 
     - role: wireguard
       tags: [wireguard]
-      when: wg_ip is defined
+      when: wg_ip is defined or wg_roaming_ip is defined
 
     - role: firewall
       tags: [firewall]

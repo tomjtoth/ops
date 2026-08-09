@@ -24,38 +24,37 @@
   shell: echo "{{ privatekey_raw.stdout | trim }}" | wg pubkey
   register: publickey_raw
 
-- name: Resolve SSH endpoint (from local ssh config)
-  delegate_to: main
-  become: false
-  changed_when: false
-  shell: ssh -G {{ inventory_hostname }} | awk '$1 == "hostname" {print $2}'
-  register: ssh_resolved
-
 - name: Set WireGuard facts
-  set_fact:
+  ansible.builtin.set_fact:
     wg_private_key: "{{ privatekey_raw.stdout | trim }}"
     wg_public_key: "{{ publickey_raw.stdout | trim }}"
-    wg_endpoint: >-
-      {{
-        '' if inventory_hostname in groups['laptops']
-        else (ssh_resolved.stdout | trim)
-      }}
-    wg_ip: "{{ wg_ip }}"
+    wg_endpoint: "{{ inventory_hostname }}.ttj.hu"
+    wg_ip: "{{ wg_ip | default(wg_roaming_ip) }}"
+    wg_roaming: "{{ wg_roaming_ip is defined }}"
+    wg_proxies: "{{ wg_proxies | split(',') if wg_proxies is defined else [] }}"
+
+- name: Initialize peer list
+  ansible.builtin.set_fact:
+    wg_peers: {}
 
 - name: Build peer list
-  set_fact:
-    wg_peers: []
-
-- name: Populate peer list
-  set_fact:
-    wg_peers: >
-      {{ wg_peers + [ {
-        'wg_ip': hostvars[item].wg_ip,
-        'wg_public_key': hostvars[item].wg_public_key,
-        'wg_endpoint': hostvars[item].wg_endpoint,
-      } ] }}
+  ansible.builtin.set_fact:
+    wg_peers: >-
+      {{
+        wg_peers | combine({
+          item: {
+            "wg_public_key": hostvars[item].wg_public_key,
+            "wg_endpoint": hostvars[item].wg_endpoint,
+            "wg_ip": hostvars[item].wg_ip,
+            "wg_roaming": hostvars[item].wg_roaming,
+            "wg_proxies": hostvars[item].wg_proxies
+          }
+        })
+      }}
   loop: "{{ groups['all'] }}"
-  when: item != inventory_hostname and hostvars[item].wg_ip is defined
+  when:
+    - item != inventory_hostname
+    - hostvars[item].wg_ip is defined
 
 - name: Render wg0.conf
   template:
