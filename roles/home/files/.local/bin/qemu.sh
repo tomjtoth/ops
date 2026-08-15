@@ -13,7 +13,7 @@ VM_AUDIO="-audiodev pipewire,id=snd0 -device ich9-intel-hda"
 
 UEFI_FLAGS="
     -drive if=pflash,format=raw,readonly=on,file=/usr/share/edk2/x64/OVMF_CODE.secboot.4m.fd
-    -drive if=pflash,format=raw,file="${VM_DIR}/.OVMF_VARS.4m.fd"
+    -drive if=pflash,format=raw,file=${VM_DIR}/.OVMF_VARS.4m.fd
 "
 
 TPM_DIR=$(mktemp -d)
@@ -52,8 +52,6 @@ case "${1:-}" in
     install)
         [ ! -d "$VM_DIR" ] && mkdir -p "$VM_DIR"
 
-        cp /usr/share/edk2/x64/OVMF_VARS.4m.fd "${VM_DIR}/.OVMF_VARS.4m.fd"
-
         qemu-img create -f qcow2 "$VM_DISK" 500G
 
         main -nic none -cdrom $2 -boot order=d
@@ -62,9 +60,15 @@ case "${1:-}" in
     # based on https://github.com/cy4n1c/single-intel-gpu-passthrough
     igpu)
         source $SCRIPT_DIR/qemu-igpu
-        unbind
-        main
-        rebind
+
+        if [ "${2:-}" = sriov ]; then
+            sriov
+            main
+        else
+            unbind
+            main
+            rebind
+        fi
         ;;
 
     revert)
