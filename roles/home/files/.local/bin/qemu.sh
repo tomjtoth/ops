@@ -1,32 +1,14 @@
 #!/bin/bash
 
-set -Eeu
+set -Eeux
 
-# as of 28.21.2024 shared folder support and GPU passthrough not working, win11-24H2 installed just fine
-# setting up samba requires limiting it to localhost
-# 13.8.2026 Code:43 on the VM, prolly needs intel_gop
+SCRIPT_DIR=$(realpath "$0")
+SCRIPT_DIR=${SCRIPT_DIR%/*}
 
-VM_DIR="$HOME/.qemu-VMs/${VM_OS:-win11}"
+VM_DIR="$HOME/.qemu-VMs/${VM:-win11}"
 VM_DISK="${VM_DIR}/disk"
 VM_INPUT="-usb -device usb-tablet"
-# VM_VIDEO="-vga qxl"
 VM_VIDEO="-vga vmware -vnc 127.0.0.1:0"
-
-# dumped host bios: sudo flashrom -p internal -r host_bios.bin
-# uefitool host_bios.bin # CTRL+F IntelGopDriver -> PE32 image -> Extract body -> below file
-INTEL_GOP=~/intel_gop.efi
-
-SUDO=
-
-if [ -n "${VFIO_PCI:-}" ]; then
-    SUDO=sudo
-    VM_VIDEO="
-        -device ramfb -vga none -vnc 0.0.0.0:0
-        -device vfio-pci-igd-lpc-bridge,id=lpc0,bus=pcie.0,addr=1f.0
-        -device vfio-pci,host=$VFIO_PCI,bus=pcie.0,addr=0x2,x-igd-opregion=on,x-igd-gms=4,romfile=$INTEL_GOP
-    "
-fi
-
 VM_AUDIO="-audiodev pipewire,id=snd0 -device ich9-intel-hda"
 
 UEFI_FLAGS="
@@ -41,34 +23,55 @@ TPM_FLAGS="
     -device tpm-tis,tpmdev=tpm0
 "
 
-if [[ "${1:-not}" == "install" ]]; then
-    cp /usr/share/edk2/x64/OVMF_VARS.4m.fd \
-        "${VM_DIR}/.OVMF_VARS.4m.fd"
+main(){
+    swtpm socket \
+        --tpm2 \
+        --tpmstate "dir=$TPM_DIR" \
+        --ctrl "type=unixio,path=$TPM_DIR/swtpm-sock" &
 
-    qemu-img create -f qcow2 "$VM_DISK" 500G
+    ${SUDO:-} qemu-system-x86_64 \
+        -m 6G \
+        -cpu host,kvm=off,hv-vendor-id=GenuineIntel \
+        -smp 4 \
+        -machine q35 \
+        -drive file="$VM_DISK",format=qcow2 \
+        -enable-kvm \
+        -rtc base=localtime \
+        $TPM_FLAGS \
+        $UEFI_FLAGS \
+        $VM_INPUT \
+        `# $VM_AUDIO` \
+        $VM_VIDEO \
+        $@
 
-    INSTALL_FLAGS="-nic none -cdrom $2 -boot order=d"
-fi
+    pkill swtpm
+    rm -rf $TPM_DIR
+}
 
-$SUDO swtpm socket \
-    --tpm2 \
-    --tpmstate "dir=$TPM_DIR" \
-    --ctrl "type=unixio,path=$TPM_DIR/swtpm-sock" &
+case "${1:-}" in 
+    install)
+        [ ! -d "$VM_DIR" ] && mkdir -p "$VM_DIR"
 
-$SUDO qemu-system-x86_64 \
-    -m 6G \
-    -cpu host,kvm=off \
-    -smp 4 \
-    -machine q35 \
-    -drive file="$VM_DISK",format=qcow2 \
-    -enable-kvm \
-    -rtc base=localtime \
-    $TPM_FLAGS \
-    $UEFI_FLAGS \
-    $VM_INPUT \
-    `# $VM_AUDIO` \
-    $VM_VIDEO \
-    ${INSTALL_FLAGS:-}
+        cp /usr/share/edk2/x64/OVMF_VARS.4m.fd "${VM_DIR}/.OVMF_VARS.4m.fd"
 
-$SUDO pkill swtpm
-rm -rf $TPM_DIR
+        qemu-img create -f qcow2 "$VM_DISK" 500G
+
+        main -nic none -cdrom $2 -boot order=d
+        ;;
+
+    # based on https://github.com/cy4n1c/single-intel-gpu-passthrough
+    igpu)
+        source $SCRIPT_DIR/qemu-igpu
+        unbind
+        main
+        rebind
+        ;;
+
+    revert)
+        set +Eeu
+        source $SCRIPT_DIR/qemu-igpu
+        rebind
+        ;;
+
+    *) main ;;
+esac
