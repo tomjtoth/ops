@@ -20,10 +20,30 @@ SUDO=
 
 if [ -n "${VFIO_PCI:-}" ]; then
     SUDO=sudo
+
+    if [ ! -d /dev/kvmfr0 ]; then
+        sudo modprobe kvmfr static_size_mb=32
+        sudo chown root:kvm /dev/kvmfr0
+        sudo chmod 0660 /dev/kvmfr0
+
+        echo 0 | sudo tee /sys/bus/pci/devices/0000:00:02.0/sriov_drivers_autoprobe
+        echo 1 | sudo tee /sys/bus/pci/devices/0000:00:02.0/sriov_numvfs
+
+        lspci -nnk -s 00:02
+
+        sudo modprobe vfio-pci
+        echo vfio-pci | sudo tee /sys/bus/pci/devices/0000:00:02.1/driver_override
+        echo 0000:00:02.1 | sudo tee /sys/bus/pci/drivers_probe
+
+        lspci -nnk -s 00:02
+    fi
+
+
     VM_VIDEO="
         -device ramfb -vga none -vnc 0.0.0.0:0
-        -device vfio-pci-igd-lpc-bridge,id=lpc0,bus=pcie.0,addr=1f.0
-        -device vfio-pci,host=$VFIO_PCI,bus=pcie.0,addr=0x2,x-igd-opregion=on,x-igd-gms=4,romfile=$INTEL_GOP
+        -device vfio-pci,host=${VFIO_PCI}
+        -object memory-backend-file,id=looking-glass,mem-path=/dev/kvmfr0,size=32M,share=yes
+        -device ivshmem-plain,memdev=looking-glass
     "
 fi
 
@@ -31,7 +51,7 @@ VM_AUDIO="-audiodev pipewire,id=snd0 -device ich9-intel-hda"
 
 UEFI_FLAGS="
     -drive if=pflash,format=raw,readonly=on,file=/usr/share/edk2/x64/OVMF_CODE.secboot.4m.fd
-    -drive if=pflash,format=raw,file="${VM_DIR}/.OVMF_VARS.4m.fd"
+    -drive if=pflash,format=raw,file=${VM_DIR}/.OVMF_VARS.4m.fd
 "
 
 TPM_DIR=$(mktemp -d)
@@ -57,7 +77,7 @@ $SUDO swtpm socket \
 
 $SUDO qemu-system-x86_64 \
     -m 6G \
-    -cpu host,kvm=off \
+    -cpu host,hv-vendor-id=GenuineIntel \
     -smp 4 \
     -machine q35 \
     -drive file="$VM_DISK",format=qcow2 \

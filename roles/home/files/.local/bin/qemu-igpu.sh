@@ -68,4 +68,3 @@ unbind
 VFIO_PCI=0000:00:02.1 qemu.sh
 
 rebind
-
