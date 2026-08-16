@@ -57,18 +57,17 @@ case "${1:-}" in
         main -nic none -cdrom $2 -boot order=d
         ;;
 
-    # based on https://github.com/cy4n1c/single-intel-gpu-passthrough
     igpu)
         source $SCRIPT_DIR/qemu-igpu
 
-        if [ "${2:-}" = sriov ]; then
-            sriov
-            main
-        else
-            unbind
-            main
-            rebind
-        fi
+        case "${2:-}" in
+            sriov) sriov; main;;
+
+            gvt) gvt; main;;
+
+            # based on https://github.com/cy4n1c/single-intel-gpu-passthrough
+            *) unbind; main; rebind;;
+        esac
         ;;
 
     revert)

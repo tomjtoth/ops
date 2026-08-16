@@ -92,6 +92,7 @@ rebind() {
 # https://projectacrn.github.io/3.3/tutorials/gpu-passthru.html
 # https://github.com/Kethen/edk2-build-intel-gop
 
+# NOT working on Thinkpad T14 Gen 2 with i5-1135G7
 sriov() {
     if [ ! -d /dev/kvmfr0 ]; then
         sudo modprobe kvmfr static_size_mb=32
@@ -114,10 +115,36 @@ sriov() {
     SUDO=sudo
 
     VM_VIDEO="
-        -device ramfb -vga none -vnc 0.0.0.0:0
+        -vga none
+        -device ramfb
+        -display gtk,gl=on
         -device vfio-pci,host=${VFIO_PCI}
         -object memory-backend-file,id=looking-glass,mem-path=/dev/kvmfr0,size=32M,share=yes
         -device ivshmem-plain,memdev=looking-glass
     "
 
+}
+
+# NOT working on Acer Aspire E 14 with i3-7130U
+gvt() {
+    local GVT_PCI=/sys/devices/pci0000\:00/0000\:00\:02.0
+    local GVT_UUID=$(uuidgen)
+
+    # cleanup any leftovers
+    for d in /sys/bus/mdev/devies/*; do
+        echo 1 | sudo tee "$d/remove"
+    done
+
+    sudo modprobe kvmgt vfio-iommu-type1 mdev
+
+    echo $GVT_UUID | sudo tee $GVT_PCI/mdev_supported_types/i915-GVTg_V5_4/create
+
+    SUDO=sudo
+    VM_VIDEO="
+        -monitor stdio
+        -vga none
+        -display gtk,gl=on
+        -device ramfb
+        -device vfio-pci,sysfsdev=/sys/bus/mdev/devices/$GVT_UUID,display=on,x-igd-opregion=on,driver=vfio-pci-nohotplug
+    "
 }
