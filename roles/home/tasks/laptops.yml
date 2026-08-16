@@ -1,4 +1,10 @@
 ---
+- name: Make sure ~/.local exists
+  file:
+    path: ~/.local
+    state: directory
+    mode: 0755
+
 - name: Symlink files in ~
   file:
     path: "~/{{ item.rstrip('/') }}"
