@@ -12,8 +12,10 @@ __backlight(){
         BL_LEVEL=$(cat ${BL_PATH[0]})
     elif [ -e ${BL_PATH[1]} ]; then
         BL_LEVEL=$(cat ${BL_PATH[1]})
-    else
+    elif [ -e ${BL_PATH[2]} ]; then
         BL_LEVEL=$(cat ${BL_PATH[2]})
+    else
+        BL_LEVEL=1
     fi
 
     if [ $1 = store ]; then
@@ -39,6 +41,10 @@ unbind() {
     sudo systemctl stop display-manager.service
 
     __bind_tty 0
+
+    for buf in /sys/bus/platform/drivers/efi-framebuffer/efi-framebuffer.*; do
+        echo ${buf##*/} | sudo tee /sys/bus/platform/drivers/efi-framebuffer/unbind
+    done
 
     sudo modprobe -rv xe || true
 
