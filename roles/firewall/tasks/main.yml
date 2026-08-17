@@ -13,26 +13,18 @@
     src: base.nft
   register: base
 
-- name: Ensure {{ nftd }} exists
+- name: Ensure /etc/nftables.d exists
   file:
-    path: "{{ nftd }}"
+    path: /etc/nftables.d
     state: directory
     mode: "0755"
 
-- name: Render rules to {{ nftd }}
+- name: Render rules to /etc/nftables.d
   template:
     src: ruleset.nft.j2
-    dest: "{{ nftd }}/01_ttj.nft"
+    dest: /etc/nftables.d/01_ttj.nft
     mode: "0644"
   register: rules
-
-- name: Ensure drop-in snippets are parsed
-  lineinfile:
-    path: >-
-      /etc/nftables.{{
-        'nft' if ansible_facts.distribution == "Alpine" else 'conf'
-      }}
-    line: include "{{ nftd }}/*.nft"
 
 - name: Reload nft ruleset
   when: base.changed or rules.changed
