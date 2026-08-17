@@ -1,17 +1,17 @@
 table inet filter {
     chain input {
-        tcp dport { 22, 55522 } ct state new meter ssh { \
+        tcp dport {{ wg_port }} ct state new meter ssh { \
             ip saddr limit rate 10/minute \
         } accept comment "Allow SSH for non-brute-force attempts"
 
-        tcp dport { 22, 55522 } drop comment "Deny SSH"
+        tcp dport {{ wg_port }} drop comment "Deny SSH"
 {% if wg_ip is defined %}
 {% if not wg_endpoint.endswith('.local') %}
 
         tcp dport {80,443} accept comment "Allow HTTP / HTTPS"
 {% endif %}
 
-        udp dport 55520 accept comment "Allow Wireguard"
+        udp dport {{ wg_port }} accept comment "Allow Wireguard"
         iifname wg0 accept comment "Allow wg0"
 
         ip daddr { 10.244.0.0/16, 10.96.0.0/12 } accept \

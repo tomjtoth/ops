@@ -1,2 +1,2 @@
 ---
-wg_port: 55520
+wg_port: "{{ lookup('ansible.builtin.env', 'PORT') }}"
