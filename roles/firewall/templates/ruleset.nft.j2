@@ -26,7 +26,7 @@ table inet filter {
         ip protocol igmp accept comment "Allow IGMP multicast membership"
 
 {% if debug_nft is defined %}
-        log prefix "NFT-INPUT-UNACCEPTED" flags all \
+        log prefix "NFT INPUT UNACCEPTED: " flags all \
             meter unaccepted_input_log { \
                 ip saddr . meta l4proto . tcp dport \
                 limit rate 1/minute \
@@ -52,7 +52,7 @@ table inet filter {
             comment "Allow traffic from k0s podCIDR, serviceCIDR"
 {% if debug_nft is defined %}
 
-        log prefix "NFT-FORWARD-UNACCEPTED" flags all
+        log prefix "NFT FORWARD UNACCEPTED: " flags all
 {% endif %}
     }
 {% endif %}
