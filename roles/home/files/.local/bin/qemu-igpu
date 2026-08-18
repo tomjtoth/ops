@@ -93,40 +93,46 @@ rebind() {
 }
 
 # https://www.reddit.com/r/VFIO/comments/12pxo25/full_passthrough_of_12th_gen_iris_xe_seems/
+# that works with 12th gen CPU
 
 # this should require ACRN project's patched edk2, but I failed to build it myself
 # https://projectacrn.github.io/3.3/tutorials/gpu-passthru.html
 # https://github.com/Kethen/edk2-build-intel-gop
 
-# NOT working on Thinkpad T14 Gen 2 with i5-1135G7
+# NOT working on Thinkpad T14 Gen 2 with i5-1135G7 with kernel line args: 
+# intel_iommu=on iommu=pt i915.enable_guc=3 i915.max_vfs=7 module_blacklist=xe
+# and https://github.com/strongtz/i915-sriov-dkms/releases/tag/2026.08.12.1 installed
 sriov() {
-    if [ ! -d /dev/kvmfr0 ]; then
-        sudo modprobe kvmfr static_size_mb=32
-        sudo chown root:kvm /dev/kvmfr0
-        sudo chmod 0660 /dev/kvmfr0
+    # if [ ! -d /dev/kvmfr0 ]; then
+    #     sudo modprobe kvmfr static_size_mb=32
+    #     sudo chown root:kvm /dev/kvmfr0
+    #     sudo chmod 0660 /dev/kvmfr0
+    # fi
 
-        echo 0 | sudo tee /sys/bus/pci/devices/0000:00:02.0/sriov_drivers_autoprobe
-        echo 1 | sudo tee /sys/bus/pci/devices/0000:00:02.0/sriov_numvfs
+    echo 0 | sudo tee /sys/bus/pci/devices/0000:00:02.0/sriov_drivers_autoprobe
+    echo 1 | sudo tee /sys/bus/pci/devices/0000:00:02.0/sriov_numvfs
 
-        lspci -nnk -s 00:02
+    lspci -nnk -s 00:02
 
-        sudo modprobe vfio-pci
-        echo vfio-pci | sudo tee /sys/bus/pci/devices/0000:00:02.1/driver_override
-        echo 0000:00:02.1 | sudo tee /sys/bus/pci/drivers_probe
+    sudo modprobe vfio-pci
+    echo vfio-pci | sudo tee /sys/bus/pci/devices/0000:00:02.1/driver_override
+    echo 0000:00:02.1 | sudo tee /sys/bus/pci/drivers_probe
 
-        lspci -nnk -s 00:02
-    fi
-
+    lspci -nnk -s 00:02
 
     SUDO=sudo
 
+    VM_CPU="host,kvm=off,hv-vendor-id=GenuineIntel"
+    VM_CPU="host,hv-passthrough,hv-enforce-cpuid"
+    
+    local VFIO_PCI=0000:00:02.1
+    local INTEL_GOP=~/intel_gop.efi
     VM_VIDEO="
         -vga none
         -device ramfb
-        -display gtk,gl=on
-        -device vfio-pci,host=${VFIO_PCI}
-        -object memory-backend-file,id=looking-glass,mem-path=/dev/kvmfr0,size=32M,share=yes
-        -device ivshmem-plain,memdev=looking-glass
+        -vnc 127.0.0.1:0
+        `# -display gtk,gl=on`
+        -device vfio-pci,host=0000:00:02.1
     "
 
 }

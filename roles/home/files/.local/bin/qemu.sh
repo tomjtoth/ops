@@ -10,6 +10,7 @@ VM_DISK="${VM_DIR}/disk"
 VM_INPUT="-usb -device usb-tablet"
 VM_VIDEO="-vga vmware -vnc 127.0.0.1:0"
 VM_AUDIO="-audiodev pipewire,id=snd0 -device ich9-intel-hda"
+VM_CPU="host,kvm=off"
 
 UEFI_FLAGS="
     -drive if=pflash,format=raw,readonly=on,file=/usr/share/edk2/x64/OVMF_CODE.secboot.4m.fd
@@ -31,7 +32,7 @@ main(){
 
     ${SUDO:-} qemu-system-x86_64 \
         -m 6G \
-        -cpu host,kvm=off,hv-vendor-id=GenuineIntel \
+        -cpu $VM_CPU \
         -smp 4 \
         -machine q35 \
         -drive file="$VM_DISK",format=qcow2 \
@@ -57,24 +58,21 @@ case "${1:-}" in
         main -nic none -cdrom $2 -boot order=d
         ;;
 
-    igpu)
-        source $SCRIPT_DIR/qemu-igpu
+    sr-iov|gvt-g|pt|revert-pt) source $SCRIPT_DIR/qemu-igpu ;&
 
-        case "${2:-}" in
-            sriov) sriov; main;;
+    sr-iov) sriov; main;;
 
-            gvt) gvt; main;;
+    gvt-g) gvt; main;;
 
-            # based on https://github.com/cy4n1c/single-intel-gpu-passthrough
-            *) unbind; main; rebind;;
-        esac
-        ;;
-
-    revert)
-        set +Eeu
-        source $SCRIPT_DIR/qemu-igpu
-        rebind
-        ;;
+    # based on https://github.com/cy4n1c/single-intel-gpu-passthrough
+    pt) 
+        if [ "${2:-}" = revert ]; then
+            set +Eeu
+            rebind
+        else
+            unbind; main; rebind
+        fi
+    ;;
 
     *) main ;;
 esac
