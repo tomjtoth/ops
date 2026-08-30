@@ -8,6 +8,8 @@ declare -A games=(
     [xiii]="$HOME/.wine-xiii/drive_c/GOG Games/XIII/system/XIII.exe"
 
     [avp2010]="$HOME/.wine-avp2010/drive_c/Program Files (x86)/DODI-Repacks/Aliens vs Predator/AvP_Launcher.exe"
+
+    [LTspice]="$HOME/.wine-LTspice/drive_c/Program Files/ADI/LTspice/LTspice.exe"
 )
 
 case "$1" in 
