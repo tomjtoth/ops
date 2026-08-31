@@ -10,6 +10,8 @@ declare -A games=(
     [avp2010]="$HOME/.wine-avp2010/drive_c/Program Files (x86)/DODI-Repacks/Aliens vs Predator/AvP_Launcher.exe"
 
     [LTspice]="$HOME/.wine-LTspice/drive_c/Program Files/ADI/LTspice/LTspice.exe"
+
+    [TINA-TI]="$HOME/.wine-TINA-TI/drive_c/Program Files (x86)/DesignSoft/Tina 9 - TI/TINA.EXE"
 )
 
 case "$1" in 
