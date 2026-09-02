@@ -8,7 +8,8 @@ SCRIPT_DIR=${SCRIPT_DIR%/*}
 VM_DIR="$HOME/.qemu-VMs/${VM:-win11}"
 VM_DISK="${VM_DIR}/disk"
 VM_INPUT="-usb -device usb-tablet"
-VM_VIDEO="-vga vmware -vnc 127.0.0.1:0"
+
+VM_VIDEO="-vga virtio -display gtk,zoom-to-fit=on"
 VM_AUDIO="-audiodev pipewire,id=snd0 -device ich9-intel-hda"
 VM_CPU="host,kvm=off"
 
