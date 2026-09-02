@@ -3,7 +3,7 @@
 set -Eeux
 
 declare -A games=(
-    [avp2primal-hunt]="$HOME/.wine/drive_c/Program Files (x86)/Aliens versus Predator 2 - Primal Hunt/PrimalHunt!.exe"
+    [avp2ph]="$HOME/.wine-avp2/drive_c/Program Files (x86)/Aliens versus Predator 2 - Primal Hunt/PrimalHunt!.exe"
     
     [xiii]="$HOME/.wine-xiii/drive_c/GOG Games/XIII/system/XIII.exe"
 
