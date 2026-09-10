@@ -29,8 +29,8 @@
     wg_private_key: "{{ privatekey_raw.stdout | trim }}"
     wg_public_key: "{{ publickey_raw.stdout | trim }}"
     wg_endpoint: "{{ inventory_hostname }}.ttj.hu"
-    wg_ip: "{{ wg_ip | default(wg_roaming_ip) }}"
-    wg_roaming: "{{ wg_roaming_ip is defined }}"
+    wg_ip: "{{ wg_ip | default('') | replace('-roaming', '') }}"
+    wg_roaming: "{{ wg_ip is defined and wg_ip.endswith('-roaming') }}"
     wg_proxies: "{{ wg_proxies | split(',') if wg_proxies is defined else [] }}"
 
 - name: Initialize peer list
