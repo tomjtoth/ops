@@ -259,7 +259,7 @@ function configuring_ssh() {
         log
 
         local opts=(
-            Port            55522
+            Port            $PORT
             AllowGroups     wheel
             PermitRootLogin no
         )
