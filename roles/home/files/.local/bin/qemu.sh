@@ -67,6 +67,8 @@ case "${1:-}" in
         [ ! -d "$VM_DIR" ] && mkdir -p "$VM_DIR"
 
         qemu-img create -f qcow2 "$VM_DISK" 500G
+        cp /usr/share/edk2/x64/OVMF_VARS.4m.fd ${VM_DIR}/.OVMF_VARS.4m.fd
+        VM_SHARED_FOLDER=""
 
         main -nic none -cdrom "$2" -boot order=d
         ;;
