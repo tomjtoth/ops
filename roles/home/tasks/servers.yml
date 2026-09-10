@@ -1,6 +1,6 @@
 ---
 - name: Sync files in ~
-  synchronize:
+  ansible.posix.synchronize:
     dest: ~/{{ item }}
     src: "{{ role_path + '/files/' + item }}"
     delete: true
