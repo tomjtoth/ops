@@ -44,7 +44,7 @@ main(){
     ${SUDO:-} qemu-system-x86_64 \
         -m 6G \
         -cpu $VM_CPU \
-        -smp 8 \
+        -smp $(nproc) \
         -machine q35 \
         -drive file="$VM_DISK",format=qcow2 \
         -enable-kvm \
