@@ -174,16 +174,17 @@ function installing_missing_packages() {
         # Desktop Environment
         gdm gnome-shell gnome-keyring eog nautilus file-roller
         gnome-terminal
+        gnome-calculator
+        gnome-tweaks
         gnome-control-center
         gnome-shell-extension-appindicator
         gnome-shell-extension-caffeine
-        xdg-desktop-portal-gnome
+        gnome-shell-extension-vitals
         gnome-browser-connector
-        gnome-calculator gnome-tweaks
         ttf-dejavu
 
         # gui utils
-        evince vlc geany geany-plugins keepassxc
+        evince vlc gedit keepassxc
 
         # video editing
         obs-studio avidemux-qt
