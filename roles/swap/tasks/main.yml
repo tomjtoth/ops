@@ -3,6 +3,7 @@
   include_tasks: swapfile.yml
   when:
     - ansible_facts.swaptotal_mb == 0
+    - ansible_facts.mounts | selectattr('mount', 'equalto', '/') | map(attribute='fstype') | first | default('') != 'btrfs'
 
 - name: systemd-zram-generator
   include_tasks: systemd-zram-generator.yml
