@@ -5,8 +5,19 @@ set -Eeux
 SCRIPT_DIR=$(realpath "$0")
 SCRIPT_DIR=${SCRIPT_DIR%/*}
 
-VM_DIR="$HOME/.qemu-VMs/${VM:-win11}"
-VM_DISK="${VM_DIR}/disk"
+VM_DIR="$HOME/qemu-VMs"
+[ ! -d "$VM_DIR" ] && mkdir -p "${VM_DIR}"
+
+VM=${VM:-win11}
+if [[ $VM = */* ]]; then
+    echo "VM should be a simple prefix for .qcow in $VM_DIR, not a path"
+    exit 1
+fi
+
+VM="$VM_DIR/$VM"
+VM_DISK="${VM}.qcow"
+VM_UEFI_VARS="${VM}.OVMF_VARS.4m.fd"
+
 VM_INPUT="-usb -device usb-tablet"
 
 VM_VIDEO="-vga virtio -display gtk,zoom-to-fit=on"
@@ -25,7 +36,7 @@ VM_SMBIOS=(
 
 UEFI_FLAGS="
     -drive if=pflash,format=raw,readonly=on,file=/usr/share/edk2/x64/OVMF_CODE.secboot.4m.fd
-    -drive if=pflash,format=raw,file=${VM_DIR}/.OVMF_VARS.4m.fd
+    -drive if=pflash,format=raw,file=$VM_UEFI_VARS
 "
 
 TPM_DIR=$(mktemp -d)
@@ -64,10 +75,8 @@ main(){
 
 case "${1:-}" in 
     install)
-        [ ! -d "$VM_DIR" ] && mkdir -p "$VM_DIR"
-
         qemu-img create -f qcow2 "$VM_DISK" 500G
-        cp /usr/share/edk2/x64/OVMF_VARS.4m.fd ${VM_DIR}/.OVMF_VARS.4m.fd
+        cp /usr/share/edk2/x64/OVMF_VARS.4m.fd $VM_UEFI_VARS
         VM_SHARED_FOLDER=""
 
         main -nic none -cdrom "$2" -boot order=d
