@@ -9,12 +9,11 @@ declare -A games=(
 
     [avp2010]="$HOME/.wine-avp2010/drive_c/Program Files (x86)/DODI-Repacks/Aliens vs Predator/AvP_Launcher.exe"
 
-    # [d2x]="$HOME/.wine-d2x/drive_c/Program Files (x86)/Diablo II/Diablo II.exe"
     [d2x]="$HOME/.wine-d2x/drive_c/Program Files (x86)/Diablo II/Mod PlugY/PlugY.exe"
 )
 
 case "$1" in 
-    install) WINEPREFIX=~/.wine-$2 wine "$3"; exit 0;;
+    install) WINEPREFIX=~/.wine-$2 wine "$3";;
 
     d2x)
         # https://diablo.fandom.com/wiki/Game_commands#Game_commands
