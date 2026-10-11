@@ -1,14 +1,14 @@
 #!/bin/bash
 
+set -Eeo pipefail
+
 exec_wait() {
     local controller=$1
     shift
 
-    while ! res=$(docker exec k0s-$controller "$@" 2>/dev/null); do  
+    while ! docker exec k0s-$controller "$@" 2>/dev/null; do  
         sleep 1
     done
-
-    echo "$res"
 }
 
 case "$1" in
