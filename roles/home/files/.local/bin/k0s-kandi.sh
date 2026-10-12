@@ -15,7 +15,6 @@ case "$1" in
     add)
         shift
         for i in $@; do
-            # https://docs.k0sproject.io/v1.36.2+k0s.0/k0s-in-docker/
 
             if [ $i -ne $1 ]; then
                 token=$(exec_wait $1 k0s token create --role=controller)
@@ -23,6 +22,7 @@ case "$1" in
                 join=(k0s controller --enable-worker --no-taints "$token")
             fi
 
+            # https://docs.k0sproject.io/v1.36.2+k0s.0/k0s-in-docker/
             docker run -d --name k0s-$i --hostname k0s-$i \
                 --tmpfs /run `# this is where k0s stores runtime data` \
                 --privileged `# this is the easiest way to enable container-in-container workloads` \
